@@ -1,0 +1,131 @@
+{
+	/* Your oauth2 credentials. See README on how to get these. */
+	"oauth2": {
+		"private_key_id": "",
+		"private_key": "",
+		"client_email": "",
+		"client_id": "",
+		"type": "",
+		"spread_scope": "https://spreadsheets.google.com/feeds",
+	},
+	/* Your MozDef setup */
+	"mozdef": {
+		"host": "",
+		"port": 9200,
+		"proto": "http",
+		"dashboard_url": ""
+	},
+	/* Data levels
+	 * Unknown: Could not be determined.
+	 * PUBLIC: Public data is defined as either intended for public consumption or data that would have no negative effect if released.
+	 * INTERNAL: Internal data is defined as that which we intend to keep private and depend on for our day to day work but should not share to the public.
+	 * RESTRICTED: Restricted data is defined as information that must be handled with a high level of care and must not be shared without specific approval.
+	 * SECRET: Secret data is data that is intentionally unreadable to Mozilla. The data is considered so important that the plain-text cannot be seen by Mozilla.
+	 */
+	"data_levels": ["Unknown", "PUBLIC", "INTERNAL", "RESTRICTED", "SECRET"],
+
+	/* Risk standard levels
+	 * Unknown: Could not be determined.
+	 *
+	 * LOW
+	 *	Attention: Attention is expected but not required.
+	 *	Complexity: No specific tooling or strategies required. Following security practices with security level low is expected.
+	 *	Efforts: Best effort is expected done to mitigate or remediate the risk.
+	 *	Risk acceptance: Risk may often be accepted as residual risk.
+	 *
+	 * MEDIUM
+	 *	Attention: Get attention from all concerned parties.
+	 *	Complexity: Following security practices with security level medium is expected.
+	 *	Efforts: Industry best practices are expected to be followed in all cases.
+	 *	Risk acceptance: Risk should generally be discussed, and at least mitigated.
+	 *
+	 * HIGH
+	 *	Attention: Get full attention from all concerned parties.
+	 *	Complexity: Following practices with security level high is expected. Slightly advanced configuration settings and extra tools may be used.
+	 *	Efforts: A larger amount of effort is expected.
+	 *	Risk acceptance: Risk must  be discussed, and should at least be mitigated.
+	 *
+	 * MAXIMUM
+	 *	Attention: Get full attention from all concerned parties
+	 *	Complexity: Following practices with security level maximum is expected. Uses the best and most advanced available remediation or mitigation strategies, tools.
+	 *	Efforts: Greatest amount of effort may be required to mitigate or remediate the risk.
+	 *	Risk acceptance: This risk is rarely expected to be accepted as residual risk, must be discussed, and should be mitigated or remediated.
+	 */
+	"risk_levels": ["Unknown", "LOW", "MEDIUM", "HIGH", "MAXIMUM"],
+
+	/* JSON Document syntax for RRAs 
+	 * /!\ WARNING /!\ If you modify this, you'll have to modify the code, too
+	 */
+	"rrajson": {
+		"timestamp": "",
+		"summary": "",
+		"source": "",
+		"category": "rra_data",
+		"severity": "INFO",
+		"tags": [
+		    "RRA",
+		    "service"
+		],
+		"details": {
+		    "metadata": {
+			"service": "",
+			"description": "",
+			"scope": "",
+			"owner": "",
+			"developper": "",
+			"operator": ""
+			},
+		    "data": {
+			"default": "",
+			"PUBLIC": [],
+			"INTERNAL": [],
+			"RESTRICTED": [],
+			"SECRET": []
+		    },
+		    "risk": {
+			"confidentiality": {
+			    "reputation": {
+				"impact": "",
+				"probability": ""
+			    },
+			    "finances": {
+				"impact": "",
+				"probability": ""
+			    },
+			    "productivity": {
+				"impact": "",
+				"probability": ""
+			    }
+			},
+			"integrity": {
+			    "reputation": {
+				"impact": "",
+				"probability": ""
+			    },
+			    "finances": {
+				"impact": "",
+				"probability": ""
+			    },
+			    "productivity": {
+				"impact": "",
+				"probability": ""
+			    }
+			},
+			"availability": {
+			    "reputation": {
+				"impact": "",
+				"probability": ""
+			    },
+			    "finances": {
+				"impact": "",
+				"probability": ""
+			    },
+			    "productivity": {
+				"impact": "",
+				"probability": ""
+			    }
+			}
+		    }
+		}
+	}
+}
