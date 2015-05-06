@@ -216,6 +216,21 @@ def parse_rra_100(gc, sheet, name, version, rrajson, data_levels, risk_levels):
     A.finances.impact = validate_entry(cell_value_near(s, 'Access Control', xmoves=2), risk_levels)
     A.productivity.impact = validate_entry(cell_value_near(s, 'Access Control', xmoves=3), risk_levels)
 
+    return rrajson
+
+
+def parse_rra_230(gc, sheet, name, version, rrajson, data_levels, risk_levels):
+    '''
+    called by parse_rra virtual function wrapper
+    @gc google gspread connection
+    @sheet spreadsheet
+    @name spreadsheet name
+    @version RRA version detected
+    @rrajson writable template for the JSON format of the RRA
+    @data_levels list of data levels allowed
+    @risk_levels list of risk levels allowed
+    '''
+
     import pprint
     pp = pprint.PrettyPrinter()
     pp.pprint(rrajson)
@@ -223,14 +238,11 @@ def parse_rra_100(gc, sheet, name, version, rrajson, data_levels, risk_levels):
     code.interact(local=locals())
     sys.exit()
 
-def parse_rra_230(gc, sheet, name, version, rrajson, data_levels, risk_levels):
-    pass
-
 def parse_rra_240(gc, sheet, name, version, rrajson, data_levels, risk_levels):
     '''
     240 and 241 are about the same
     '''
-    return parse_rra_241(gc, sheet, name, version)
+    return parse_rra_241(gc, sheet, name, version, rrajson, data_levels, risk_levels)
 
 def parse_rra_241(gc, sheet, name, version, rrajson, data_levels, risk_levels):
     pass
