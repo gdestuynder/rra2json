@@ -14,6 +14,9 @@ import gspread
 import hjson as json
 from xml.etree import ElementTree as et
 import sys
+import pytz
+from datetime import datetime
+from dateutil.parser import parse
 
 class DotDict(dict):
     '''dict.item notation for dict()'s'''
@@ -33,6 +36,34 @@ def fatal(msg):
 
 def debug(msg):
     sys.stderr.write('+++ {}\n'.format(msg))
+
+def toUTC(suspectedDate, localTimeZone=None):
+    '''Anything => UTC date. Magic.'''
+    if (localTimeZone == None):
+        try:
+            localTimeZone = '/'.join(os.path.realpath('/etc/localtime').split('/')[-2:])
+        except:
+            localTimeZone = 'UTC'
+    utc = pytz.UTC
+    objDate = None
+    if (type(suspectedDate) == str):
+        objDate = parse(suspectedDate, fuzzy=True)
+    elif (type(suspectedDate) == datetime):
+        objDate=suspectedDate
+
+    if (objDate.tzinfo is None):
+        try:
+            objDate=pytz.timezone(localTimeZone).localize(objDate)
+        except pytz.exceptions.UnknownTimeZoneError:
+            #Meh if all fails, I decide you're UTC!
+            objDate=pytz.timezone('UTC').localize(objDate)
+        objDate=utc.normalize(objDate)
+    else:
+        objDate=utc.normalize(objDate)
+    if (objDate is not None):
+        objDate=utc.normalize(objDate)
+
+    return objDate
 
 def gspread_authorize(email, private_key, scope, secret=None):
     '''
@@ -162,6 +193,10 @@ def parse_rra_100(gc, sheet, name, version, rrajson, data_levels, risk_levels):
     metadata.developer = cell_value_near(s, 'Developer') + ' ' + cell_value_near(s, 'Developer', xmoves=2)
     metadata.operator = cell_value_near(s, 'Operator') + ' ' + cell_value_near(s, 'Operator', xmoves=2)
 
+    rrajson.summary = 'RRA for {}'.format(metadata.service)
+    rrajson.timestamp = toUTC(datetime.now()).isoformat()
+    rrajson.lastmodified = toUTC(s.updated).isoformat()
+
     data = rrajson.details.data
     data.default = 'Unknown'
 
@@ -184,9 +219,9 @@ def parse_rra_100(gc, sheet, name, version, rrajson, data_levels, risk_levels):
     import pprint
     pp = pprint.PrettyPrinter()
     pp.pprint(rrajson)
-    sys.exit()
     import code
     code.interact(local=locals())
+    sys.exit()
 
 def parse_rra_230(gc, sheet, name, version, rrajson, data_levels, risk_levels):
     pass
