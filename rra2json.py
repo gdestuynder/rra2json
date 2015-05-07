@@ -250,8 +250,13 @@ def parse_rra_230(gc, sheet, name, version, rrajson, data_levels, risk_levels):
 
     data = rrajson.details.data
     data.default = cell_value_near(s, 'Data classification', xmoves=2)
-    c = s.find('Classification')
+
     i = 0
+    try:
+        c = s.find('Classification')
+    except gspread.exceptions.CellNotFound:
+        i = -1
+
     # if there are more than 100 datatypes, well, that's too many anyway.
     # the 100 limit is a safeguard in case the loop goes wrong due to unexpected data in the sheet
     while ((i != -1) and (i<100)):
@@ -316,8 +321,12 @@ def parse_rra_241(gc, sheet, name, version, rrajson, data_levels, risk_levels):
 
     data = rrajson.details.data
     data.default = cell_value_near(s, 'Data classification', xmoves=2)
-    c = s.find('Classification')
     i = 0
+    try:
+        c = s.find('Data Classification')
+    except gspread.exceptions.CellNotFound:
+        i = -1
+
     # if there are more than 100 datatypes, well, that's too many anyway.
     # the 100 limit is a safeguard in case the loop goes wrong due to unexpected data in the sheet
     while ((i != -1) and (i<100)):
@@ -339,15 +348,27 @@ def parse_rra_241(gc, sheet, name, version, rrajson, data_levels, risk_levels):
     I = rrajson.details.risk.integrity
     A = rrajson.details.risk.availability
 
-    C.reputation.impact = validate_entry(cell_value_near(s, 'Impact Level', xmoves=0, ymoves=1), risk_levels)
-    C.finances.impact = validate_entry(cell_value_near(s, 'Impact Level', xmoves=0, ymoves=2), risk_levels)
-    C.productivity.impact = validate_entry(cell_value_near(s, 'Impact Level', xmoves=0, ymoves=3), risk_levels)
-    I.reputation.impact = validate_entry(cell_value_near(s, 'Impact Level', xmoves=0, ymoves=4), risk_levels)
-    I.finances.impact = validate_entry(cell_value_near(s, 'Impact Level', xmoves=0, ymoves=5), risk_levels)
-    I.productivity.impact = validate_entry(cell_value_near(s, 'Impact Level', xmoves=0, ymoves=6), risk_levels)
-    A.reputation.impact = validate_entry(cell_value_near(s, 'Impact Level', xmoves=0, ymoves=7), risk_levels)
-    A.finances.impact = validate_entry(cell_value_near(s, 'Impact Level', xmoves=0, ymoves=8), risk_levels)
-    A.productivity.impact = validate_entry(cell_value_near(s, 'Impact Level', xmoves=0, ymoves=9), risk_levels)
+    C.reputation.impact = validate_entry(cell_value_near(s, 'Impact', xmoves=0, ymoves=1), risk_levels)
+    C.finances.impact = validate_entry(cell_value_near(s, 'Impact', xmoves=0, ymoves=2), risk_levels)
+    C.productivity.impact = validate_entry(cell_value_near(s, 'Impact', xmoves=0, ymoves=3), risk_levels)
+    I.reputation.impact = validate_entry(cell_value_near(s, 'Impact', xmoves=0, ymoves=4), risk_levels)
+    I.finances.impact = validate_entry(cell_value_near(s, 'Impact', xmoves=0, ymoves=5), risk_levels)
+    I.productivity.impact = validate_entry(cell_value_near(s, 'Impact', xmoves=0, ymoves=6), risk_levels)
+    A.reputation.impact = validate_entry(cell_value_near(s, 'Impact', xmoves=0, ymoves=7), risk_levels)
+    A.finances.impact = validate_entry(cell_value_near(s, 'Impact', xmoves=0, ymoves=8), risk_levels)
+    A.productivity.impact = validate_entry(cell_value_near(s, 'Impact', xmoves=0, ymoves=9), risk_levels)
+
+    C.reputation.probability = validate_entry(cell_value_near(s, 'Probability', xmoves=0, ymoves=1), risk_levels)
+    C.finances.probability = validate_entry(cell_value_near(s, 'Probability', xmoves=0, ymoves=2), risk_levels)
+    C.productivity.probability = validate_entry(cell_value_near(s, 'Probability', xmoves=0, ymoves=3), risk_levels)
+    I.reputation.probability = validate_entry(cell_value_near(s, 'Probability', xmoves=0, ymoves=4), risk_levels)
+    I.finances.probability = validate_entry(cell_value_near(s, 'Probability', xmoves=0, ymoves=5), risk_levels)
+    I.productivity.probability = validate_entry(cell_value_near(s, 'Probability', xmoves=0, ymoves=6), risk_levels)
+    A.reputation.probability = validate_entry(cell_value_near(s, 'Probability', xmoves=0, ymoves=7), risk_levels)
+    A.finances.probability = validate_entry(cell_value_near(s, 'Probability', xmoves=0, ymoves=8), risk_levels)
+    A.productivity.probability = validate_entry(cell_value_near(s, 'Probability', xmoves=0, ymoves=9), risk_levels)
+
+
 
     import pprint
     pp = pprint.PrettyPrinter()
