@@ -157,7 +157,11 @@ def cell_value_near(s, value, xmoves=1, ymoves=0):
     @value: string
     @xmoves, ymoves: number of right lateral moves to find the field value to return
     '''
-    c = s.find(value)
+    try:
+        c = s.find(value)
+    except gspread.exceptions.CellNotFound:
+        return None
+
     if not c:
         return None
     return s.cell(c.row+ymoves, c.col+xmoves).value
