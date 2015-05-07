@@ -151,7 +151,7 @@ def cell_value_near(s, value, xmoves=1, ymoves=0):
 
     cell_value_rightof('Name') will return 'Bob'
 
-    Function returns None if nothing is found.
+    Function returns empty string if nothing is found.
 
     @s: worksheet
     @value: string
@@ -160,10 +160,10 @@ def cell_value_near(s, value, xmoves=1, ymoves=0):
     try:
         c = s.find(value)
     except gspread.exceptions.CellNotFound:
-        return None
+        return ''
 
     if not c:
-        return None
+        return ''
     return s.cell(c.row+ymoves, c.col+xmoves).value
 
 def validate_entry(value, allowed):
@@ -320,7 +320,7 @@ def parse_rra_241(gc, sheet, name, version, rrajson, data_levels, risk_levels):
     rrajson.lastmodified = toUTC(s.updated).isoformat()
 
     data = rrajson.details.data
-    data.default = cell_value_near(s, 'Data classification', xmoves=2)
+    data.default = cell_value_near(s, 'Service Data classification', xmoves=2)
     i = 0
     try:
         c = s.find('Data Classification')
