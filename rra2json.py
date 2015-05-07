@@ -231,12 +231,53 @@ def parse_rra_230(gc, sheet, name, version, rrajson, data_levels, risk_levels):
     @risk_levels list of risk levels allowed
     '''
 
-    import pprint
-    pp = pprint.PrettyPrinter()
-    pp.pprint(rrajson)
-    import code
-    code.interact(local=locals())
-    sys.exit()
+    s = sheet.sheet1
+    rrajson.source = sheet.id
+    metadata = rrajson.details.metadata
+    metadata.service = cell_value_near(s, 'Service name')
+    metadata.scope = cell_value_near(s, 'RRA Scope')
+    metadata.owner = cell_value_near(s, 'Service owner')
+    metadata.developer = cell_value_near(s, 'Developer')
+    metadata.operator = cell_value_near(s, 'Operator')
+
+    rrajson.summary = 'RRA for {}'.format(metadata.service)
+    rrajson.timestamp = toUTC(datetime.now()).isoformat()
+    rrajson.lastmodified = toUTC(s.updated).isoformat()
+
+    data = rrajson.details.data
+    data.default = cell_value_near(s, 'Data classification', xmoves=2)
+    c = s.find('Classification')
+    i = 0
+    # if there are more than 100 datatypes, well, that's too many anyway.
+    # the 100 limit is a safeguard in case the loop goes wrong due to unexpected data in the sheet
+    while ((i != -1) and (i<100)):
+        i = i+1
+        # cell = data level
+        # val = data name
+        cell = s.cell(c.row+i, c.col)
+        val = s.cell(c.row+i, c.col-2)
+        if cell.value == '':
+            #Bail out - list ended
+            i = -1
+            continue
+
+        for d in data_levels:
+            if cell.value == d:
+                data[d].append(val.value)
+
+    C = rrajson.details.risk.confidentiality
+    I = rrajson.details.risk.integrity
+    A = rrajson.details.risk.availability
+
+    C.reputation.impact = validate_entry(cell_value_near(s, 'Impact Level', xmoves=0, ymoves=1), risk_levels)
+    C.finances.impact = validate_entry(cell_value_near(s, 'Impact Level', xmoves=0, ymoves=2), risk_levels)
+    C.productivity.impact = validate_entry(cell_value_near(s, 'Impact Level', xmoves=0, ymoves=3), risk_levels)
+    I.reputation.impact = validate_entry(cell_value_near(s, 'Impact Level', xmoves=0, ymoves=4), risk_levels)
+    I.finances.impact = validate_entry(cell_value_near(s, 'Impact Level', xmoves=0, ymoves=5), risk_levels)
+    I.productivity.impact = validate_entry(cell_value_near(s, 'Impact Level', xmoves=0, ymoves=6), risk_levels)
+    A.reputation.impact = validate_entry(cell_value_near(s, 'Impact Level', xmoves=0, ymoves=7), risk_levels)
+    A.finances.impact = validate_entry(cell_value_near(s, 'Impact Level', xmoves=0, ymoves=8), risk_levels)
+    A.productivity.impact = validate_entry(cell_value_near(s, 'Impact Level', xmoves=0, ymoves=9), risk_levels)
 
 def parse_rra_240(gc, sheet, name, version, rrajson, data_levels, risk_levels):
     '''
@@ -245,7 +286,71 @@ def parse_rra_240(gc, sheet, name, version, rrajson, data_levels, risk_levels):
     return parse_rra_241(gc, sheet, name, version, rrajson, data_levels, risk_levels)
 
 def parse_rra_241(gc, sheet, name, version, rrajson, data_levels, risk_levels):
-    pass
+    '''
+    called by parse_rra virtual function wrapper
+    @gc google gspread connection
+    @sheet spreadsheet
+    @name spreadsheet name
+    @version RRA version detected
+    @rrajson writable template for the JSON format of the RRA
+    @data_levels list of data levels allowed
+    @risk_levels list of risk levels allowed
+    '''
+
+    s = sheet.sheet1
+    rrajson.source = sheet.id
+    metadata = rrajson.details.metadata
+    metadata.service = cell_value_near(s, 'Service name')
+    metadata.scope = cell_value_near(s, 'RRA Scope')
+    metadata.owner = cell_value_near(s, 'Service owner')
+    metadata.developer = cell_value_near(s, 'Developer')
+    metadata.operator = cell_value_near(s, 'Operator')
+
+    rrajson.summary = 'RRA for {}'.format(metadata.service)
+    rrajson.timestamp = toUTC(datetime.now()).isoformat()
+    rrajson.lastmodified = toUTC(s.updated).isoformat()
+
+    data = rrajson.details.data
+    data.default = cell_value_near(s, 'Data classification', xmoves=2)
+    c = s.find('Classification')
+    i = 0
+    # if there are more than 100 datatypes, well, that's too many anyway.
+    # the 100 limit is a safeguard in case the loop goes wrong due to unexpected data in the sheet
+    while ((i != -1) and (i<100)):
+        i = i+1
+        # cell = data level
+        # val = data name
+        cell = s.cell(c.row+i, c.col)
+        val = s.cell(c.row+i, c.col-2)
+        if cell.value == '':
+            #Bail out - list ended
+            i = -1
+            continue
+
+        for d in data_levels:
+            if cell.value == d:
+                data[d].append(val.value)
+
+    C = rrajson.details.risk.confidentiality
+    I = rrajson.details.risk.integrity
+    A = rrajson.details.risk.availability
+
+    C.reputation.impact = validate_entry(cell_value_near(s, 'Impact Level', xmoves=0, ymoves=1), risk_levels)
+    C.finances.impact = validate_entry(cell_value_near(s, 'Impact Level', xmoves=0, ymoves=2), risk_levels)
+    C.productivity.impact = validate_entry(cell_value_near(s, 'Impact Level', xmoves=0, ymoves=3), risk_levels)
+    I.reputation.impact = validate_entry(cell_value_near(s, 'Impact Level', xmoves=0, ymoves=4), risk_levels)
+    I.finances.impact = validate_entry(cell_value_near(s, 'Impact Level', xmoves=0, ymoves=5), risk_levels)
+    I.productivity.impact = validate_entry(cell_value_near(s, 'Impact Level', xmoves=0, ymoves=6), risk_levels)
+    A.reputation.impact = validate_entry(cell_value_near(s, 'Impact Level', xmoves=0, ymoves=7), risk_levels)
+    A.finances.impact = validate_entry(cell_value_near(s, 'Impact Level', xmoves=0, ymoves=8), risk_levels)
+    A.productivity.impact = validate_entry(cell_value_near(s, 'Impact Level', xmoves=0, ymoves=9), risk_levels)
+
+    import pprint
+    pp = pprint.PrettyPrinter()
+    pp.pprint(rrajson)
+    import code
+    code.interact(local=locals())
+    sys.exit()
 
 def main():
     with open('rra2json.json') as fd:
