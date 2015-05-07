@@ -320,7 +320,7 @@ def parse_rra_241(gc, sheet, name, version, rrajson, data_levels, risk_levels):
     rrajson.lastmodified = toUTC(s.updated).isoformat()
 
     data = rrajson.details.data
-    data.default = cell_value_near(s, 'Service Data classification', xmoves=2)
+    data.default = cell_value_near(s, 'Service\nData classification', xmoves=2)
     i = 0
     try:
         c = s.find('Data Classification')
