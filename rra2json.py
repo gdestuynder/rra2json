@@ -368,15 +368,6 @@ def parse_rra_241(gc, sheet, name, version, rrajson, data_levels, risk_levels):
     A.finances.probability = validate_entry(cell_value_near(s, 'Probability', xmoves=0, ymoves=8), risk_levels)
     A.productivity.probability = validate_entry(cell_value_near(s, 'Probability', xmoves=0, ymoves=9), risk_levels)
 
-
-
-    import pprint
-    pp = pprint.PrettyPrinter()
-    pp.pprint(rrajson)
-    import code
-    code.interact(local=locals())
-    sys.exit()
-
 def main():
     with open('rra2json.json') as fd:
         config = json.load(fd)
@@ -403,7 +394,7 @@ def main():
             rrajsondoc = parse_rra(gc, s, sheets[s.id], rra_version, DotDict(dict(rrajson_skel)), list(data_levels),
                     list(risk_levels))
         else:
-            print('Document {} ({}) could not be parsed and is probably not an RRA'.format(sheets[s.id], s.id))
+            debug('Document {} ({}) could not be parsed and is probably not an RRA'.format(sheets[s.id], s.id))
 
 if __name__ == "__main__":
     main()
