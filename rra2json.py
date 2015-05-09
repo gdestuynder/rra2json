@@ -104,6 +104,11 @@ def detect_version(gc, s):
     Find a sheet called Version and something that looks like a version number in cell 1,16 (P1)
     Else, we try to guess.
     '''
+
+    # If the sheet is specifically marked as deprecated/etc, bail out now!
+    if (s.sheet1.title.lower() in ['cancelled', 'superseded', 'deprecated', 'invalid']):
+        return None
+
     # If we're lucky there's a version number (RRA format >2.4.1)
     version = s.sheet1.cell(1,16).value
     if version != '':
