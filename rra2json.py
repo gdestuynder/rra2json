@@ -323,15 +323,20 @@ def parse_rra_230(gc, sheet, name, version, rrajson, data_levels, risk_levels):
     I = rrajson.details.risk.integrity
     A = rrajson.details.risk.availability
 
-    C.reputation.impact = validate_entry(cell_value_near(sheet_data, 'Impact Level', xmoves=0, ymoves=1), risk_levels)
-    C.finances.impact = validate_entry(cell_value_near(sheet_data, 'Impact Level', xmoves=0, ymoves=2), risk_levels)
-    C.productivity.impact = validate_entry(cell_value_near(sheet_data, 'Impact Level', xmoves=0, ymoves=3), risk_levels)
-    I.reputation.impact = validate_entry(cell_value_near(sheet_data, 'Impact Level', xmoves=0, ymoves=4), risk_levels)
-    I.finances.impact = validate_entry(cell_value_near(sheet_data, 'Impact Level', xmoves=0, ymoves=5), risk_levels)
-    I.productivity.impact = validate_entry(cell_value_near(sheet_data, 'Impact Level', xmoves=0, ymoves=6), risk_levels)
-    A.reputation.impact = validate_entry(cell_value_near(sheet_data, 'Impact Level', xmoves=0, ymoves=7), risk_levels)
-    A.finances.impact = validate_entry(cell_value_near(sheet_data, 'Impact Level', xmoves=0, ymoves=8), risk_levels)
-    A.productivity.impact = validate_entry(cell_value_near(sheet_data, 'Impact Level', xmoves=0, ymoves=9), risk_levels)
+    impact = 'Impact Level'
+    try:
+        C.reputation.impact = validate_entry(cell_value_near(sheet_data, impact, xmoves=0, ymoves=1), risk_levels)
+    except IndexError:
+        impact = 'Impact to Mozilla'
+        C.reputation.impact = validate_entry(cell_value_near(sheet_data, impact, xmoves=0, ymoves=1), risk_levels)
+    C.finances.impact = validate_entry(cell_value_near(sheet_data, impact, xmoves=0, ymoves=2), risk_levels)
+    C.productivity.impact = validate_entry(cell_value_near(sheet_data, impact, xmoves=0, ymoves=3), risk_levels)
+    I.reputation.impact = validate_entry(cell_value_near(sheet_data, impact, xmoves=0, ymoves=4), risk_levels)
+    I.finances.impact = validate_entry(cell_value_near(sheet_data, impact, xmoves=0, ymoves=5), risk_levels)
+    I.productivity.impact = validate_entry(cell_value_near(sheet_data, impact, xmoves=0, ymoves=6), risk_levels)
+    A.reputation.impact = validate_entry(cell_value_near(sheet_data, impact, xmoves=0, ymoves=7), risk_levels)
+    A.finances.impact = validate_entry(cell_value_near(sheet_data, impact, xmoves=0, ymoves=8), risk_levels)
+    A.productivity.impact = validate_entry(cell_value_near(sheet_data, impact, xmoves=0, ymoves=9), risk_levels)
 
     return rrajson
 
