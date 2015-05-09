@@ -377,7 +377,7 @@ def parse_rra_241(gc, sheet, name, version, rrajson, data_levels, risk_levels):
     rrajson.lastmodified = toUTC(s.updated).isoformat()
 
     data = rrajson.details.data
-    data.default = cell_value_near(sheet_data, 'Service\nData classification', xmoves=2)
+    data.default = cell_value_near(sheet_data, 'Service Data classification', xmoves=2)
 
     #Find/list all data dictionnary
     res = [match for match in list_find(sheet_data, 'Data Classification')][0]
