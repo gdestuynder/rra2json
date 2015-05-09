@@ -138,6 +138,22 @@ def check_last_update(gc, s):
     last_update = s.sheet1.updated
     return True
 
+def list_find(data, value):
+    '''Return position (index) in list of list, of the first @value found.
+    The match is case insensitive.
+    Returns empty list if nothing is found.
+    @data = list(list(), ...)
+    @value str'''
+    value = value.lower()
+
+    for x, cells in enumerate(data):
+        try:
+            cells_lower = [item.lower() for item in cells]
+            y = cells_lower.index(value)
+        except ValueError:
+            continue
+        yield x, y
+
 def cell_value_near(s, value, xmoves=1, ymoves=0):
     '''
     Returns value of cell near the first cell found containing 'value'.
@@ -153,28 +169,31 @@ def cell_value_near(s, value, xmoves=1, ymoves=0):
 
     Function returns empty string if nothing is found.
 
-    @s: worksheet
+    @s: worksheet list data (s=[row][col]) from gspread.model.Worksheet.get_all_values()
     @value: string
     @xmoves, ymoves: number of right lateral moves to find the field value to return
     '''
-    try:
-        c = s.find(value)
-    except gspread.exceptions.CellNotFound:
+
+    res = [match for match in list_find(s, value)][0]
+
+    # Nothing found
+    if len(res) == 0:
         return ''
 
-    if not c:
+    try:
+        return s[res[0]+ymoves][res[1]+xmoves].strip('\n')
+    except IndexError:
         return ''
-    return s.cell(c.row+ymoves, c.col+xmoves).value
 
 def validate_entry(value, allowed):
     '''
     Check input value against a list of allowed data
     Return value or 'Unknown'.
     @allowed: list()
-    @value: string
+    @value: str
     '''
     if value in allowed:
-        return value
+        return value.strip('\n')
     return 'Unknown'
 
 def parse_rra_100(gc, sheet, name, version, rrajson, data_levels, risk_levels):
@@ -189,13 +208,18 @@ def parse_rra_100(gc, sheet, name, version, rrajson, data_levels, risk_levels):
     @risk_levels list of risk levels allowed
     '''
     s = sheet.sheet1
+    #Fetch/export all data for faster processing
+    #Format is sheet_data[row][col] with positions starting at 0, i.e.:
+    #cell(1,2) is sheet_data[0,1]
+    sheet_data = s.get_all_values()
+
     rrajson.source = sheet.id
     metadata = rrajson.details.metadata
-    metadata.service = cell_value_near(s, 'Project Name')
-    metadata.scope = cell_value_near(s, 'Scope')
-    metadata.owner = cell_value_near(s, 'Project, Data owner') + ' ' + cell_value_near(s, 'Project, Data owner', xmoves=2)
-    metadata.developer = cell_value_near(s, 'Developer') + ' ' + cell_value_near(s, 'Developer', xmoves=2)
-    metadata.operator = cell_value_near(s, 'Operator') + ' ' + cell_value_near(s, 'Operator', xmoves=2)
+    metadata.service = cell_value_near(sheet_data, 'Project Name')
+    metadata.scope = cell_value_near(sheet_data, 'Scope')
+    metadata.owner = cell_value_near(sheet_data, 'Project, Data owner') + ' ' + cell_value_near(sheet_data, 'Project, Data owner', xmoves=2)
+    metadata.developer = cell_value_near(sheet_data, 'Developer') + ' ' + cell_value_near(sheet_data, 'Developer', xmoves=2)
+    metadata.operator = cell_value_near(sheet_data, 'Operator') + ' ' + cell_value_near(sheet_data, 'Operator', xmoves=2)
 
     rrajson.summary = 'RRA for {}'.format(metadata.service)
     rrajson.timestamp = toUTC(datetime.now()).isoformat()
@@ -208,17 +232,17 @@ def parse_rra_100(gc, sheet, name, version, rrajson, data_levels, risk_levels):
     I = rrajson.details.risk.integrity
     A = rrajson.details.risk.availability
 
-    C.reputation.impact = validate_entry(cell_value_near(s, 'Confidentiality'), risk_levels)
-    C.finances.impact = validate_entry(cell_value_near(s, 'Confidentiality', xmoves=2), risk_levels)
-    C.productivity.impact = validate_entry(cell_value_near(s, 'Confidentiality', xmoves=3), risk_levels)
-    I.reputation.impact = validate_entry(cell_value_near(s, 'Availability'), risk_levels)
-    I.finances.impact = validate_entry(cell_value_near(s, 'Availability', xmoves=2), risk_levels)
-    I.productivity.impact = validate_entry(cell_value_near(s, 'Availability', xmoves=3), risk_levels)
+    C.reputation.impact = validate_entry(cell_value_near(sheet_data, 'Confidentiality'), risk_levels)
+    C.finances.impact = validate_entry(cell_value_near(sheet_data, 'Confidentiality', xmoves=2), risk_levels)
+    C.productivity.impact = validate_entry(cell_value_near(sheet_data, 'Confidentiality', xmoves=3), risk_levels)
+    I.reputation.impact = validate_entry(cell_value_near(sheet_data, 'Availability'), risk_levels)
+    I.finances.impact = validate_entry(cell_value_near(sheet_data, 'Availability', xmoves=2), risk_levels)
+    I.productivity.impact = validate_entry(cell_value_near(sheet_data, 'Availability', xmoves=3), risk_levels)
     # RRA v1.0.0 uses Recovery + Access Control to represent integrity.
     # Access Control is closest to real integrity, so we use that.
-    A.reputation.impact = validate_entry(cell_value_near(s, 'Access Control'), risk_levels)
-    A.finances.impact = validate_entry(cell_value_near(s, 'Access Control', xmoves=2), risk_levels)
-    A.productivity.impact = validate_entry(cell_value_near(s, 'Access Control', xmoves=3), risk_levels)
+    A.reputation.impact = validate_entry(cell_value_near(sheet_data, 'Access Control'), risk_levels)
+    A.finances.impact = validate_entry(cell_value_near(sheet_data, 'Access Control', xmoves=2), risk_levels)
+    A.productivity.impact = validate_entry(cell_value_near(sheet_data, 'Access Control', xmoves=3), risk_levels)
 
     return rrajson
 
@@ -236,57 +260,62 @@ def parse_rra_230(gc, sheet, name, version, rrajson, data_levels, risk_levels):
     '''
 
     s = sheet.sheet1
+    #Fetch/export all data for faster processing
+    #Format is sheet_data[row][col] with positions starting at 0, i.e.:
+    #cell(1,2) is sheet_data[0,1]
+    sheet_data = s.get_all_values()
+
     rrajson.source = sheet.id
     metadata = rrajson.details.metadata
-    metadata.service = cell_value_near(s, 'Service name')
-    metadata.scope = cell_value_near(s, 'RRA Scope')
-    metadata.owner = cell_value_near(s, 'Service owner')
-    metadata.developer = cell_value_near(s, 'Developer')
-    metadata.operator = cell_value_near(s, 'Operator')
+    metadata.service = cell_value_near(sheet_data, 'Service name')
+    metadata.scope = cell_value_near(sheet_data, 'RRA Scope')
+    metadata.owner = cell_value_near(sheet_data, 'Service owner')
+    metadata.developer = cell_value_near(sheet_data, 'Developer')
+    metadata.operator = cell_value_near(sheet_data, 'Operator')
 
     rrajson.summary = 'RRA for {}'.format(metadata.service)
     rrajson.timestamp = toUTC(datetime.now()).isoformat()
     rrajson.lastmodified = toUTC(s.updated).isoformat()
 
     data = rrajson.details.data
-    data.default = cell_value_near(s, 'Data classification', xmoves=2)
+    data.default = cell_value_near(sheet_data, 'Data classification', xmoves=2)
 
+    #Find/list all data dictionnary
+    res = [match for match in list_find(sheet_data, 'Classification')][0]
     i = 0
-    try:
-        c = s.find('Classification')
-    except gspread.exceptions.CellNotFound:
+    if len(res) == 0:
         i = -1
 
     # if there are more than 100 datatypes, well, that's too many anyway.
     # the 100 limit is a safeguard in case the loop goes wrong due to unexpected data in the sheet
     while ((i != -1) and (i<100)):
         i = i+1
-        # cell = data level
-        # val = data name
-        cell = s.cell(c.row+i, c.col)
-        val = s.cell(c.row+i, c.col-2)
-        if cell.value == '':
-            #Bail out - list ended
+        data_level = sheet_data[res[0]+i][res[1]]
+        data_type = sheet_data[res[0]+i][res[1]-2]
+        if data_level == '':
+            #Bail out - list ended/data not found/list broken/etc.
             i = -1
             continue
 
         for d in data_levels:
-            if cell.value == d:
-                data[d].append(val.value)
+            if data_level == d:
+                data[d].append(data_type)
 
     C = rrajson.details.risk.confidentiality
     I = rrajson.details.risk.integrity
     A = rrajson.details.risk.availability
 
-    C.reputation.impact = validate_entry(cell_value_near(s, 'Impact Level', xmoves=0, ymoves=1), risk_levels)
-    C.finances.impact = validate_entry(cell_value_near(s, 'Impact Level', xmoves=0, ymoves=2), risk_levels)
-    C.productivity.impact = validate_entry(cell_value_near(s, 'Impact Level', xmoves=0, ymoves=3), risk_levels)
-    I.reputation.impact = validate_entry(cell_value_near(s, 'Impact Level', xmoves=0, ymoves=4), risk_levels)
-    I.finances.impact = validate_entry(cell_value_near(s, 'Impact Level', xmoves=0, ymoves=5), risk_levels)
-    I.productivity.impact = validate_entry(cell_value_near(s, 'Impact Level', xmoves=0, ymoves=6), risk_levels)
-    A.reputation.impact = validate_entry(cell_value_near(s, 'Impact Level', xmoves=0, ymoves=7), risk_levels)
-    A.finances.impact = validate_entry(cell_value_near(s, 'Impact Level', xmoves=0, ymoves=8), risk_levels)
-    A.productivity.impact = validate_entry(cell_value_near(s, 'Impact Level', xmoves=0, ymoves=9), risk_levels)
+    C.reputation.impact = validate_entry(cell_value_near(sheet_data, 'Impact Level', xmoves=0, ymoves=1), risk_levels)
+    C.finances.impact = validate_entry(cell_value_near(sheet_data, 'Impact Level', xmoves=0, ymoves=2), risk_levels)
+    C.productivity.impact = validate_entry(cell_value_near(sheet_data, 'Impact Level', xmoves=0, ymoves=3), risk_levels)
+    I.reputation.impact = validate_entry(cell_value_near(sheet_data, 'Impact Level', xmoves=0, ymoves=4), risk_levels)
+    I.finances.impact = validate_entry(cell_value_near(sheet_data, 'Impact Level', xmoves=0, ymoves=5), risk_levels)
+    I.productivity.impact = validate_entry(cell_value_near(sheet_data, 'Impact Level', xmoves=0, ymoves=6), risk_levels)
+    A.reputation.impact = validate_entry(cell_value_near(sheet_data, 'Impact Level', xmoves=0, ymoves=7), risk_levels)
+    A.finances.impact = validate_entry(cell_value_near(sheet_data, 'Impact Level', xmoves=0, ymoves=8), risk_levels)
+    A.productivity.impact = validate_entry(cell_value_near(sheet_data, 'Impact Level', xmoves=0, ymoves=9), risk_levels)
+
+    return rrajson
 
 def parse_rra_240(gc, sheet, name, version, rrajson, data_levels, risk_levels):
     '''
@@ -307,66 +336,79 @@ def parse_rra_241(gc, sheet, name, version, rrajson, data_levels, risk_levels):
     '''
 
     s = sheet.sheet1
+    #Fetch/export all data for faster processing
+    #Format is sheet_data[row][col] with positions starting at 0, i.e.:
+    #cell(1,2) is sheet_data[0,1]
+    sheet_data = s.get_all_values()
+
     rrajson.source = sheet.id
     metadata = rrajson.details.metadata
-    metadata.service = cell_value_near(s, 'Service name')
-    metadata.scope = cell_value_near(s, 'RRA Scope')
-    metadata.owner = cell_value_near(s, 'Service owner')
-    metadata.developer = cell_value_near(s, 'Developer')
-    metadata.operator = cell_value_near(s, 'Operator')
+    metadata.service = cell_value_near(sheet_data, 'Service name')
+    metadata.scope = cell_value_near(sheet_data, 'RRA Scope')
+    metadata.owner = cell_value_near(sheet_data, 'Service owner')
+    metadata.developer = cell_value_near(sheet_data, 'Developer')
+    metadata.operator = cell_value_near(sheet_data, 'Operator')
 
     rrajson.summary = 'RRA for {}'.format(metadata.service)
     rrajson.timestamp = toUTC(datetime.now()).isoformat()
     rrajson.lastmodified = toUTC(s.updated).isoformat()
 
     data = rrajson.details.data
-    data.default = cell_value_near(s, 'Service\nData classification', xmoves=2)
+    data.default = cell_value_near(sheet_data, 'Service\nData classification', xmoves=2)
+
+    #Find/list all data dictionnary
+    res = [match for match in list_find(sheet_data, 'Data Classification')][0]
     i = 0
-    try:
-        c = s.find('Data Classification')
-    except gspread.exceptions.CellNotFound:
+    if len(res) == 0:
         i = -1
 
     # if there are more than 100 datatypes, well, that's too many anyway.
     # the 100 limit is a safeguard in case the loop goes wrong due to unexpected data in the sheet
     while ((i != -1) and (i<100)):
         i = i+1
-        # cell = data level
-        # val = data name
-        cell = s.cell(c.row+i, c.col)
-        val = s.cell(c.row+i, c.col-2)
-        if cell.value == '':
-            #Bail out - list ended
+        data_level = sheet_data[res[0]+i][res[1]]
+        data_type = sheet_data[res[0]+i][res[1]-2]
+        if data_level == '':
+            #Bail out - list ended/data not found/list broken/etc.
             i = -1
             continue
 
         for d in data_levels:
-            if cell.value == d:
-                data[d].append(val.value)
+            if data_level == d:
+                data[d].append(data_type)
 
     C = rrajson.details.risk.confidentiality
     I = rrajson.details.risk.integrity
     A = rrajson.details.risk.availability
 
-    C.reputation.impact = validate_entry(cell_value_near(s, 'Impact', xmoves=0, ymoves=1), risk_levels)
-    C.finances.impact = validate_entry(cell_value_near(s, 'Impact', xmoves=0, ymoves=2), risk_levels)
-    C.productivity.impact = validate_entry(cell_value_near(s, 'Impact', xmoves=0, ymoves=3), risk_levels)
-    I.reputation.impact = validate_entry(cell_value_near(s, 'Impact', xmoves=0, ymoves=4), risk_levels)
-    I.finances.impact = validate_entry(cell_value_near(s, 'Impact', xmoves=0, ymoves=5), risk_levels)
-    I.productivity.impact = validate_entry(cell_value_near(s, 'Impact', xmoves=0, ymoves=6), risk_levels)
-    A.reputation.impact = validate_entry(cell_value_near(s, 'Impact', xmoves=0, ymoves=7), risk_levels)
-    A.finances.impact = validate_entry(cell_value_near(s, 'Impact', xmoves=0, ymoves=8), risk_levels)
-    A.productivity.impact = validate_entry(cell_value_near(s, 'Impact', xmoves=0, ymoves=9), risk_levels)
+    C.reputation.impact = validate_entry(cell_value_near(sheet_data, 'Impact', xmoves=0, ymoves=1), risk_levels)
+    C.finances.impact = validate_entry(cell_value_near(sheet_data, 'Impact', xmoves=0, ymoves=2), risk_levels)
+    C.productivity.impact = validate_entry(cell_value_near(sheet_data, 'Impact', xmoves=0, ymoves=3), risk_levels)
+    I.reputation.impact = validate_entry(cell_value_near(sheet_data, 'Impact', xmoves=0, ymoves=4), risk_levels)
+    I.finances.impact = validate_entry(cell_value_near(sheet_data, 'Impact', xmoves=0, ymoves=5), risk_levels)
+    I.productivity.impact = validate_entry(cell_value_near(sheet_data, 'Impact', xmoves=0, ymoves=6), risk_levels)
+    A.reputation.impact = validate_entry(cell_value_near(sheet_data, 'Impact', xmoves=0, ymoves=7), risk_levels)
+    A.finances.impact = validate_entry(cell_value_near(sheet_data, 'Impact', xmoves=0, ymoves=8), risk_levels)
+    A.productivity.impact = validate_entry(cell_value_near(sheet_data, 'Impact', xmoves=0, ymoves=9), risk_levels)
 
-    C.reputation.probability = validate_entry(cell_value_near(s, 'Probability', xmoves=0, ymoves=1), risk_levels)
-    C.finances.probability = validate_entry(cell_value_near(s, 'Probability', xmoves=0, ymoves=2), risk_levels)
-    C.productivity.probability = validate_entry(cell_value_near(s, 'Probability', xmoves=0, ymoves=3), risk_levels)
-    I.reputation.probability = validate_entry(cell_value_near(s, 'Probability', xmoves=0, ymoves=4), risk_levels)
-    I.finances.probability = validate_entry(cell_value_near(s, 'Probability', xmoves=0, ymoves=5), risk_levels)
-    I.productivity.probability = validate_entry(cell_value_near(s, 'Probability', xmoves=0, ymoves=6), risk_levels)
-    A.reputation.probability = validate_entry(cell_value_near(s, 'Probability', xmoves=0, ymoves=7), risk_levels)
-    A.finances.probability = validate_entry(cell_value_near(s, 'Probability', xmoves=0, ymoves=8), risk_levels)
-    A.productivity.probability = validate_entry(cell_value_near(s, 'Probability', xmoves=0, ymoves=9), risk_levels)
+    #Depending on the weather this field is called Probability or Likelihood... the format is otherwise identical.
+    try:
+        probability = 'Probability'
+        C.reputation.probability = validate_entry(cell_value_near(sheet_data, probability, xmoves=0, ymoves=1), risk_levels)
+    except IndexError:
+        probability = 'Likelihood'
+        C.reputation.probability = validate_entry(cell_value_near(sheet_data, probability, xmoves=0, ymoves=1), risk_levels)
+
+    C.finances.probability = validate_entry(cell_value_near(sheet_data, probability, xmoves=0, ymoves=2), risk_levels)
+    C.productivity.probability = validate_entry(cell_value_near(sheet_data, probability, xmoves=0, ymoves=3), risk_levels)
+    I.reputation.probability = validate_entry(cell_value_near(sheet_data, probability, xmoves=0, ymoves=4), risk_levels)
+    I.finances.probability = validate_entry(cell_value_near(sheet_data, probability, xmoves=0, ymoves=5), risk_levels)
+    I.productivity.probability = validate_entry(cell_value_near(sheet_data, probability, xmoves=0, ymoves=6), risk_levels)
+    A.reputation.probability = validate_entry(cell_value_near(sheet_data, probability, xmoves=0, ymoves=7), risk_levels)
+    A.finances.probability = validate_entry(cell_value_near(sheet_data, probability, xmoves=0, ymoves=8), risk_levels)
+    A.productivity.probability = validate_entry(cell_value_near(sheet_data, probability, xmoves=0, ymoves=9), risk_levels)
+
+    return rrajson
 
 def main():
     with open('rra2json.json') as fd:
@@ -391,8 +433,15 @@ def main():
         if rra_version != None:
             #virtual function pointer
             parse_rra = globals()["parse_rra_{}".format(rra_version)]
-            rrajsondoc = parse_rra(gc, s, sheets[s.id], rra_version, DotDict(dict(rrajson_skel)), list(data_levels),
-                    list(risk_levels))
+            try:
+                rrajsondoc = parse_rra(gc, s, sheets[s.id], rra_version, DotDict(dict(rrajson_skel)), list(data_levels),
+                        list(risk_levels))
+            except:
+                import traceback
+                traceback.print_exc()
+                debug('Exception occured while parsing RRA {} - id {}'.format(sheets[s.id], s.id))
+
+            debug('Parsed {}: {}'.format(sheets[s.id], rra_version))
         else:
             debug('Document {} ({}) could not be parsed and is probably not an RRA'.format(sheets[s.id], s.id))
 
