@@ -294,8 +294,13 @@ def parse_rra_230(gc, sheet, name, version, rrajson, data_levels, risk_levels):
         data.default = cell_value_near(sheet_data, 'Data classification of primary service', xmoves=2)
 
     #Find/list all data dictionnary
-    res = [match for match in list_find(sheet_data, 'Classification')][0]
     i = 0
+    try:
+        res = [match for match in list_find(sheet_data, 'Classification')][0]
+    except IndexError:
+        #No data dictionary then!
+        i=-1
+
     if len(res) == 0:
         i = -1
 
