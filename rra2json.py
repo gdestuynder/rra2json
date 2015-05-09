@@ -300,9 +300,9 @@ def parse_rra_230(gc, sheet, name, version, rrajson, data_levels, risk_levels):
     except IndexError:
         #No data dictionary then!
         i=-1
-
-    if len(res) == 0:
-        i = -1
+    else:
+        if len(res) == 0:
+            i = -1
 
     # if there are more than 100 datatypes, well, that's too many anyway.
     # the 100 limit is a safeguard in case the loop goes wrong due to unexpected data in the sheet
