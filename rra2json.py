@@ -153,7 +153,7 @@ def list_find(data, value):
 
     for x, cells in enumerate(data):
         try:
-            cells_lower = [item.lower() for item in cells]
+            cells_lower = [item.lower().strip().lstrip().replace('\n', ' ') for item in cells]
             y = cells_lower.index(value)
         except ValueError:
             continue
