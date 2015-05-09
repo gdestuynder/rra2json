@@ -222,7 +222,12 @@ def parse_rra_100(gc, sheet, name, version, rrajson, data_levels, risk_levels):
     metadata = rrajson.details.metadata
     metadata.service = cell_value_near(sheet_data, 'Project Name')
     metadata.scope = cell_value_near(sheet_data, 'Scope')
-    metadata.owner = cell_value_near(sheet_data, 'Project, Data owner') + ' ' + cell_value_near(sheet_data, 'Project, Data owner', xmoves=2)
+    try:
+        metadata.owner = cell_value_near(sheet_data, 'Project, Data owner') + ' ' + cell_value_near(sheet_data, 'Project, Data owner', xmoves=2)
+    except IndexError:
+        #<100 format, really
+        metadata.owner = cell_value_near(sheet_data, 'Owner') + ' ' + cell_value_near(sheet_data, 'Owner', xmoves=2)
+
     metadata.developer = cell_value_near(sheet_data, 'Developer') + ' ' + cell_value_near(sheet_data, 'Developer', xmoves=2)
     metadata.operator = cell_value_near(sheet_data, 'Operator') + ' ' + cell_value_near(sheet_data, 'Operator', xmoves=2)
 
@@ -283,7 +288,10 @@ def parse_rra_230(gc, sheet, name, version, rrajson, data_levels, risk_levels):
     rrajson.lastmodified = toUTC(s.updated).isoformat()
 
     data = rrajson.details.data
-    data.default = cell_value_near(sheet_data, 'Data classification', xmoves=2)
+    try:
+        data.default = cell_value_near(sheet_data, 'Data classification', xmoves=2)
+    except IndexError:
+        data.default = cell_value_near(sheet_data, 'Data classification of primary service', xmoves=2)
 
     #Find/list all data dictionnary
     res = [match for match in list_find(sheet_data, 'Classification')][0]
