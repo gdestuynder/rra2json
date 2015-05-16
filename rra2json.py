@@ -213,10 +213,13 @@ def parse_rra_100(gc, sheet, name, version, rrajson, data_levels, risk_levels):
     @risk_levels list of risk levels allowed
     '''
     s = sheet.sheet1
+    ws = sheet.worksheet('Questions work sheet')
+
     #Fetch/export all data for faster processing
     #Format is sheet_data[row][col] with positions starting at 0, i.e.:
     #cell(1,2) is sheet_data[0,1]
     sheet_data = s.get_all_values()
+    wsheet_data = ws.get_all_values()
 
     rrajson.source = sheet.id
     metadata = rrajson.details.metadata
@@ -243,19 +246,27 @@ def parse_rra_100(gc, sheet, name, version, rrajson, data_levels, risk_levels):
     A = rrajson.details.risk.availability
 
     C.reputation.impact = validate_entry(cell_value_near(sheet_data, 'Confidentiality'), risk_levels)
+    C.reputation.rationale = cell_value_near(wsheet_data, 'RATIONALE', xmoves=0, ymoves=1)
     C.finances.impact = validate_entry(cell_value_near(sheet_data, 'Confidentiality', xmoves=2), risk_levels)
+    C.finances.rationale = cell_value_near(wsheet_data, 'RATIONALE', xmoves=0, ymoves=7)
     C.productivity.impact = validate_entry(cell_value_near(sheet_data, 'Confidentiality', xmoves=3), risk_levels)
-    I.reputation.impact = validate_entry(cell_value_near(sheet_data, 'Availability'), risk_levels)
-    I.finances.impact = validate_entry(cell_value_near(sheet_data, 'Availability', xmoves=2), risk_levels)
-    I.productivity.impact = validate_entry(cell_value_near(sheet_data, 'Availability', xmoves=3), risk_levels)
+    C.productivity.rationale = cell_value_near(wsheet_data, 'RATIONALE', xmoves=0, ymoves=13)
     # RRA v1.0.0 uses Recovery + Access Control to represent integrity.
     # Access Control is closest to real integrity, so we use that.
-    A.reputation.impact = validate_entry(cell_value_near(sheet_data, 'Access Control'), risk_levels)
-    A.finances.impact = validate_entry(cell_value_near(sheet_data, 'Access Control', xmoves=2), risk_levels)
-    A.productivity.impact = validate_entry(cell_value_near(sheet_data, 'Access Control', xmoves=3), risk_levels)
+    I.reputation.rationale = cell_value_near(wsheet_data, 'RATIONALE', xmoves=0, ymoves=3)+','+cell_value_near(wsheet_data, 'RATIONALE', xmoves=0, ymoves=4)
+    I.finances.rationale = cell_value_near(wsheet_data, 'RATIONALE', xmoves=0, ymoves=9)+','+cell_value_near(wsheet_data, 'RATIONALE', xmoves=0, ymoves=10)
+    I.productivity.rationale = cell_value_near(wsheet_data, 'RATIONALE', xmoves=0,ymoves=15)+','+cell_value_near(wsheet_data, 'RATIONALE', xmoves=0, ymoves=16)
+    I.reputation.impact = validate_entry(cell_value_near(sheet_data, 'Access Control'), risk_levels)
+    I.finances.impact = validate_entry(cell_value_near(sheet_data, 'Access Control', xmoves=2), risk_levels)
+    I.productivity.impact = validate_entry(cell_value_near(sheet_data, 'Access Control', xmoves=3), risk_levels)
+    A.reputation.impact = validate_entry(cell_value_near(sheet_data, 'Availability'), risk_levels)
+    A.reputation.rationale = cell_value_near(wsheet_data, 'RATIONALE', xmoves=0, ymoves=2)
+    A.finances.impact = validate_entry(cell_value_near(sheet_data, 'Availability', xmoves=2), risk_levels)
+    A.finances.rationale = cell_value_near(wsheet_data, 'RATIONALE', xmoves=0, ymoves=8)
+    A.productivity.impact = validate_entry(cell_value_near(sheet_data, 'Availability', xmoves=3), risk_levels)
+    A.productivity.rationale = cell_value_near(wsheet_data, 'RATIONALE', xmoves=0, ymoves=14)
 
     return rrajson
-
 
 def parse_rra_230(gc, sheet, name, version, rrajson, data_levels, risk_levels):
     '''
@@ -459,6 +470,7 @@ def main():
             try:
                 rrajsondoc = parse_rra(gc, s, sheets[s.id], rra_version, DotDict(dict(rrajson_skel)), list(data_levels),
                         list(risk_levels))
+                print(rrajsondoc)
             except:
                 import traceback
                 traceback.print_exc()
