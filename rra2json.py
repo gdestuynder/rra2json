@@ -17,6 +17,7 @@ import sys
 import pytz
 from datetime import datetime
 from dateutil.parser import parse
+from mozdef_client import mozdef_client as mozdef
 
 class DotDict(dict):
     '''dict.item notation for dict()'s'''
@@ -64,6 +65,16 @@ def toUTC(suspectedDate, localTimeZone=None):
         objDate=utc.normalize(objDate)
 
     return objDate
+
+def post_rra_to_mozdef(cfg, rrajsondoc):
+    msg = mozdef.MozDefRRA('{proto}://{host}:{port}/{rraindex}'.format(proto=cfg['proto'], host=cfg['host'],
+        port=cfg['port'], rraindex=cfg['rraindex']))
+    msg.set_fire_and_forget(False)
+    msg.category = rrajsondoc.category
+    msg.tags = rrajsondoc.tags
+    msg.summary = rrajsondoc.summary
+    msg.details = rrajsondoc.details
+    msg.send()
 
 def gspread_authorize(email, private_key, scope, secret=None):
     '''
@@ -496,6 +507,8 @@ def main():
                 import traceback
                 traceback.print_exc()
                 debug('Exception occured while parsing RRA {} - id {}'.format(sheets[s.id], s.id))
+
+            post_rra_to_mozdef(config['mozdef'], rrajsondoc)
 
             debug('Parsed {}: {}'.format(sheets[s.id], rra_version))
         else:

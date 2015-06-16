@@ -13,6 +13,7 @@
 		"host": "",
 		"port": 9200,
 		"proto": "http",
+		"rraindex": "rra",
 		"dashboard_url": ""
 	},
 	/* Data levels
