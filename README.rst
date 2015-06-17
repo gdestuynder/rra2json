@@ -1,11 +1,19 @@
-Create MozDef Index
-===================
+Setup MozDef
+============
+
+Create the index
+----------------
 
 Edit 'mozdef_index_setup.sh' and...
 
 .. code::
 
         $ ./mozdef_index_setup.sh
+
+Add the plugin
+--------------
+
+Ensure your MozDef has the RRA plugin: https://github.com/jeffbryner/MozDef/blob/master/mq/plugins/rra.py
 
 Get oauth2 credentials
 ======================
