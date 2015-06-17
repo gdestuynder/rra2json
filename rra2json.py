@@ -153,8 +153,7 @@ def detect_version(gc, s):
 def check_last_update(gc, s):
     '''
     Find last update of first worksheet of a spreadsheet
-    Used to filter what sheets to work on (for ex "last week updates only, etc.")
-    XXX TODO
+    Can be used to filter what sheets to work on (for ex "last week updates only, etc.")
     '''
     last_update = s.sheet1.updated
     return True
