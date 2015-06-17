@@ -342,7 +342,7 @@ def parse_rra_230(gc, sheet, name, version, rrajson, data_levels, risk_levels):
     while ((i != -1) and (i<100)):
         i = i+1
         data_level = sheet_data[res[0]+i][res[1]]
-        data_type = sheet_data[res[0]+i][res[1]-2]
+        data_type = sheet_data[res[0]+i][res[1]-2].strip('\n')
         if data_level == '':
             #Bail out - list ended/data not found/list broken/etc.
             i = -1
@@ -435,7 +435,7 @@ def parse_rra_241(gc, sheet, name, version, rrajson, data_levels, risk_levels):
     while ((i != -1) and (i<100)):
         i = i+1
         data_level = sheet_data[res[0]+i][res[1]]
-        data_type = sheet_data[res[0]+i][res[1]-2]
+        data_type = sheet_data[res[0]+i][res[1]-2].strip('\n')
         if data_level == '':
             #Bail out - list ended/data not found/list broken/etc.
             i = -1
