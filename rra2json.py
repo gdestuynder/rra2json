@@ -18,6 +18,7 @@ import pytz
 from datetime import datetime
 from dateutil.parser import parse
 from mozdef_client import mozdef_client as mozdef
+import collections
 
 class DotDict(dict):
     '''dict.item notation for dict()'s'''
@@ -239,6 +240,9 @@ def parse_rra_100(gc, sheet, name, version, rrajson, data_levels, risk_levels):
     rrajson.source = sheet.id
     metadata = rrajson.details.metadata
     metadata.service = cell_value_near(sheet_data, 'Project Name')
+    if (len(metadata.service) == 0):
+        return None
+
     metadata.scope = cell_value_near(sheet_data, 'Scope')
     try:
         metadata.owner = cell_value_near(sheet_data, 'Project, Data owner') + ' ' + cell_value_near(sheet_data, 'Project, Data owner', xmoves=2)
@@ -304,6 +308,9 @@ def parse_rra_230(gc, sheet, name, version, rrajson, data_levels, risk_levels):
     rrajson.source = sheet.id
     metadata = rrajson.details.metadata
     metadata.service = cell_value_near(sheet_data, 'Service name')
+    if (len(metadata.service) == 0):
+        return None
+
     metadata.scope = cell_value_near(sheet_data, 'RRA Scope')
     metadata.owner = cell_value_near(sheet_data, 'Service owner')
     metadata.developer = cell_value_near(sheet_data, 'Developer')
@@ -402,6 +409,9 @@ def parse_rra_241(gc, sheet, name, version, rrajson, data_levels, risk_levels):
     rrajson.source = sheet.id
     metadata = rrajson.details.metadata
     metadata.service = cell_value_near(sheet_data, 'Service name')
+    if (len(metadata.service) == 0):
+        return None
+
     metadata.scope = cell_value_near(sheet_data, 'RRA Scope')
     metadata.owner = cell_value_near(sheet_data, 'Service owner')
     metadata.developer = cell_value_near(sheet_data, 'Developer')
@@ -506,16 +516,19 @@ def main():
             try:
                 rrajsondoc = parse_rra(gc, s, sheets[s.id], rra_version, DotDict(dict(rrajson_skel)), list(data_levels),
                         list(risk_levels))
+                if rrajsondoc == None:
+                    debug('Document {} ({}) could not be parsed and is probably not an RRA'.format(sheets[s.id], s.id))
+                    continue
             except:
                 import traceback
                 traceback.print_exc()
                 debug('Exception occured while parsing RRA {} - id {}'.format(sheets[s.id], s.id))
-
-            post_rra_to_mozdef(config['mozdef'], rrajsondoc)
+            else:
+                post_rra_to_mozdef(config['mozdef'], rrajsondoc)
 
             debug('Parsed {}: {}'.format(sheets[s.id], rra_version))
         else:
-            debug('Document {} ({}) could not be parsed and is probably not an RRA'.format(sheets[s.id], s.id))
+            debug('Document {} ({}) could not be parsed and is probably not an RRA (no version detected)'.format(sheets[s.id], s.id))
 
 if __name__ == "__main__":
     main()
