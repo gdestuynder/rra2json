@@ -67,13 +67,17 @@ def toUTC(suspectedDate, localTimeZone=None):
     return objDate
 
 def post_rra_to_mozdef(cfg, rrajsondoc):
-    msg = mozdef.MozDefRRA('{proto}://{host}:{port}/{rraindex}'.format(proto=cfg['proto'], host=cfg['host'],
+    msg = mozdef.MozDefRRA('{proto}://{host}:{port}/custom/{rraindex}'.format(proto=cfg['proto'], host=cfg['host'],
         port=cfg['port'], rraindex=cfg['rraindex']))
     msg.set_fire_and_forget(False)
     msg.category = rrajsondoc.category
     msg.tags = rrajsondoc.tags
     msg.summary = rrajsondoc.summary
     msg.details = rrajsondoc.details
+    msg._updatelog = {}
+    msg._updatelog['lastmodified'] = rrajsondoc.lastmodified
+    msg._updatelog['source'] = rrajsondoc.source
+    msg._updatelog['utctimestamp'] = rrajsondoc.timestamp
     msg.send()
 
 def gspread_authorize(email, private_key, scope, secret=None):
@@ -502,7 +506,6 @@ def main():
             try:
                 rrajsondoc = parse_rra(gc, s, sheets[s.id], rra_version, DotDict(dict(rrajson_skel)), list(data_levels),
                         list(risk_levels))
-                print(rrajsondoc)
             except:
                 import traceback
                 traceback.print_exc()
