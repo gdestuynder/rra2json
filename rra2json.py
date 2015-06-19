@@ -17,7 +17,7 @@ import sys
 import pytz
 from datetime import datetime
 from dateutil.parser import parse
-from mozdef_client import mozdef_client as mozdef
+import mozdef_client as mozdef
 import collections
 
 class DotDict(dict):

@@ -3,3 +3,4 @@ hjson
 oauth2client
 pytz
 pyes
+mozdef_client
