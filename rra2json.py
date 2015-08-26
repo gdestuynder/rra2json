@@ -508,6 +508,8 @@ def main():
     #Disable debugging messages by assigning a null/none function, if configured to do so.
     if rra2jsonconfig['debug'] != 'true':
         debug = lambda x: None
+    else:
+        debug = globals()['debug']
 
     gc = gspread_authorize(authconfig['client_email'], authconfig['private_key'], authconfig['spread_scope'])
 
