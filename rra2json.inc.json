@@ -1,4 +1,7 @@
 {
+	"rra2json": {
+		"debug": "true"
+	},
 	/* Your oauth2 credentials. See README on how to get these. */
 	"oauth2": {
 		"private_key_id": "",

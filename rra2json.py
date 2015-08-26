@@ -498,10 +498,16 @@ def parse_rra_241(gc, sheet, name, version, rrajson, data_levels, risk_levels):
 def main():
     with open('rra2json.json') as fd:
         config = json.load(fd)
+        rra2jsonconfig = config['rra2json']
         authconfig = config['oauth2']
         rrajson_skel = config['rrajson']
         data_levels = config['data_levels']
         risk_levels = config['risk_levels']
+
+
+    #Disable debugging messages by assigning a null/none function, if configured to do so.
+    if rra2jsonconfig['debug'] != 'true':
+        debug = lambda x: None
 
     gc = gspread_authorize(authconfig['client_email'], authconfig['private_key'], authconfig['spread_scope'])
 
