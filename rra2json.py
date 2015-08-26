@@ -511,7 +511,12 @@ def main():
         rra_version = detect_version(gc, s)
         if rra_version != None:
             #virtual function pointer
-            parse_rra = globals()["parse_rra_{}".format(rra_version)]
+            try:
+                parse_rra = globals()["parse_rra_{}".format(rra_version)]
+            except KeyError:
+                # If this error is reached, you want to add a new parse_rra_... function that will parse the new format!
+                debug("Unsupported RRA version {}. rra2json needs to add explicit support before it can be parsed. Skipping.".format(rra_version))
+
             try:
                 rrajsondoc = parse_rra(gc, s, sheets[s.id], rra_version, DotDict(dict(rrajson_skel)), list(data_levels),
                         list(risk_levels))
