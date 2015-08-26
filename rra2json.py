@@ -456,26 +456,24 @@ def parse_rra_241(gc, sheet, name, version, rrajson, data_levels, risk_levels):
     A = rrajson.details.risk.availability
 
     C.reputation.impact = validate_entry(cell_value_near(sheet_data, 'Impact', xmoves=0, ymoves=1), risk_levels)
-    C.finances.impact = validate_entry(cell_value_near(sheet_data, 'Impact', xmoves=0, ymoves=2), risk_levels)
-    C.productivity.impact = validate_entry(cell_value_near(sheet_data, 'Impact', xmoves=0, ymoves=3), risk_levels)
-    I.reputation.impact = validate_entry(cell_value_near(sheet_data, 'Impact', xmoves=0, ymoves=4), risk_levels)
-    I.finances.impact = validate_entry(cell_value_near(sheet_data, 'Impact', xmoves=0, ymoves=5), risk_levels)
-    I.productivity.impact = validate_entry(cell_value_near(sheet_data, 'Impact', xmoves=0, ymoves=6), risk_levels)
-    A.reputation.impact = validate_entry(cell_value_near(sheet_data, 'Impact', xmoves=0, ymoves=7), risk_levels)
-    A.finances.impact = validate_entry(cell_value_near(sheet_data, 'Impact', xmoves=0, ymoves=8), risk_levels)
-    A.productivity.impact = validate_entry(cell_value_near(sheet_data, 'Impact', xmoves=0, ymoves=9), risk_levels)
-
+    C.productivity.impact = validate_entry(cell_value_near(sheet_data, 'Impact', xmoves=0, ymoves=2), risk_levels)
+    C.finances.impact = validate_entry(cell_value_near(sheet_data, 'Impact', xmoves=0, ymoves=3), risk_levels)
+    A.reputation.impact = validate_entry(cell_value_near(sheet_data, 'Impact', xmoves=0, ymoves=4), risk_levels)
+    A.productivity.impact = validate_entry(cell_value_near(sheet_data, 'Impact', xmoves=0, ymoves=5), risk_levels)
+    A.finances.impact = validate_entry(cell_value_near(sheet_data, 'Impact', xmoves=0, ymoves=6), risk_levels)
+    I.reputation.impact = validate_entry(cell_value_near(sheet_data, 'Impact', xmoves=0, ymoves=7), risk_levels)
+    I.productivity.impact = validate_entry(cell_value_near(sheet_data, 'Impact', xmoves=0, ymoves=8), risk_levels)
+    I.finances.impact = validate_entry(cell_value_near(sheet_data, 'Impact', xmoves=0, ymoves=9), risk_levels)
 
     C.reputation.rationale = cell_value_near(sheet_data, 'Rationale', xmoves=0, ymoves=1)
     C.productivity.rationale = cell_value_near(sheet_data, 'Rationale', xmoves=0, ymoves=2)
     C.finances.rationale = cell_value_near(sheet_data, 'Rationale', xmoves=0, ymoves=3)
-    I.reputation.rationale = cell_value_near(sheet_data, 'Rationale', xmoves=0, ymoves=7)
-    I.productivity.rationale = cell_value_near(sheet_data, 'Rationale', xmoves=0, ymoves=8)
-    I.finances.rationale = cell_value_near(sheet_data, 'Rationale', xmoves=0, ymoves=9)
     A.reputation.rationale = cell_value_near(sheet_data, 'Rationale', xmoves=0, ymoves=4)
     A.productivity.rationale = cell_value_near(sheet_data, 'Rationale', xmoves=0, ymoves=5)
     A.finances.rationale = cell_value_near(sheet_data, 'Rationale', xmoves=0, ymoves=6)
-
+    I.reputation.rationale = cell_value_near(sheet_data, 'Rationale', xmoves=0, ymoves=7)
+    I.productivity.rationale = cell_value_near(sheet_data, 'Rationale', xmoves=0, ymoves=8)
+    I.finances.rationale = cell_value_near(sheet_data, 'Rationale', xmoves=0, ymoves=9)
 
     #Depending on the weather this field is called Probability or Likelihood... the format is otherwise identical.
     try:
@@ -485,14 +483,14 @@ def parse_rra_241(gc, sheet, name, version, rrajson, data_levels, risk_levels):
         probability = 'Likelihood'
         C.reputation.probability = validate_entry(cell_value_near(sheet_data, probability, xmoves=0, ymoves=1), risk_levels)
 
-    C.finances.probability = validate_entry(cell_value_near(sheet_data, probability, xmoves=0, ymoves=2), risk_levels)
-    C.productivity.probability = validate_entry(cell_value_near(sheet_data, probability, xmoves=0, ymoves=3), risk_levels)
-    I.reputation.probability = validate_entry(cell_value_near(sheet_data, probability, xmoves=0, ymoves=4), risk_levels)
-    I.finances.probability = validate_entry(cell_value_near(sheet_data, probability, xmoves=0, ymoves=5), risk_levels)
-    I.productivity.probability = validate_entry(cell_value_near(sheet_data, probability, xmoves=0, ymoves=6), risk_levels)
-    A.reputation.probability = validate_entry(cell_value_near(sheet_data, probability, xmoves=0, ymoves=7), risk_levels)
-    A.finances.probability = validate_entry(cell_value_near(sheet_data, probability, xmoves=0, ymoves=8), risk_levels)
-    A.productivity.probability = validate_entry(cell_value_near(sheet_data, probability, xmoves=0, ymoves=9), risk_levels)
+    C.productivity.probability = validate_entry(cell_value_near(sheet_data, probability, xmoves=0, ymoves=2), risk_levels)
+    C.finances.probability = validate_entry(cell_value_near(sheet_data, probability, xmoves=0, ymoves=3), risk_levels)
+    A.reputation.probability = validate_entry(cell_value_near(sheet_data, probability, xmoves=0, ymoves=4), risk_levels)
+    A.productivity.probability = validate_entry(cell_value_near(sheet_data, probability, xmoves=0, ymoves=5), risk_levels)
+    A.finances.probability = validate_entry(cell_value_near(sheet_data, probability, xmoves=0, ymoves=6), risk_levels)
+    I.reputation.probability = validate_entry(cell_value_near(sheet_data, probability, xmoves=0, ymoves=7), risk_levels)
+    I.productivity.probability = validate_entry(cell_value_near(sheet_data, probability, xmoves=0, ymoves=8), risk_levels)
+    I.finances.probability = validate_entry(cell_value_near(sheet_data, probability, xmoves=0, ymoves=9), risk_levels)
 
     return rrajson
 
