@@ -19,6 +19,7 @@ from datetime import datetime
 from dateutil.parser import parse
 import mozdef_client as mozdef
 import collections
+import copy
 
 class DotDict(dict):
     '''dict.item notation for dict()'s'''
@@ -532,7 +533,7 @@ def main():
                 debug("Unsupported RRA version {}. rra2json needs to add explicit support before it can be parsed. Skipping RRA {} - id {}.".format(rra_version, sheets[s.id], s.id))
 
             try:
-                rrajsondoc = parse_rra(gc, s, sheets[s.id], rra_version, DotDict(dict(rrajson_skel)), list(data_levels),
+                rrajsondoc = parse_rra(gc, s, sheets[s.id], rra_version, DotDict(dict(copy.deepcopy(rrajson_skel))), list(data_levels),
                         list(risk_levels))
                 if rrajsondoc == None:
                     debug('Document {} ({}) could not be parsed and is probably not an RRA'.format(sheets[s.id], s.id))
