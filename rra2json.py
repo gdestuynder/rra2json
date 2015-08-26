@@ -387,6 +387,12 @@ def parse_rra_240(gc, sheet, name, version, rrajson, data_levels, risk_levels):
     '''
     return parse_rra_241(gc, sheet, name, version, rrajson, data_levels, risk_levels)
 
+def parse_rra_242(gc, sheet, name, version, rrajson, data_levels, risk_levels):
+    '''
+    241 and 242 are about the same as well
+    '''
+    return parse_rra_241(gc, sheet, name, version, rrajson, data_levels, risk_levels)
+
 def parse_rra_241(gc, sheet, name, version, rrajson, data_levels, risk_levels):
     '''
     called by parse_rra virtual function wrapper
@@ -515,7 +521,7 @@ def main():
                 parse_rra = globals()["parse_rra_{}".format(rra_version)]
             except KeyError:
                 # If this error is reached, you want to add a new parse_rra_... function that will parse the new format!
-                debug("Unsupported RRA version {}. rra2json needs to add explicit support before it can be parsed. Skipping.".format(rra_version))
+                debug("Unsupported RRA version {}. rra2json needs to add explicit support before it can be parsed. Skipping RRA {} - id {}.".format(rra_version, sheets[s.id], s.id))
 
             try:
                 rrajsondoc = parse_rra(gc, s, sheets[s.id], rra_version, DotDict(dict(rrajson_skel)), list(data_levels),
