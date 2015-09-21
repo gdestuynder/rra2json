@@ -526,9 +526,10 @@ def main():
             #virtual function pointer
             try:
                 parse_rra = globals()["parse_rra_{}".format(rra_version)]
-            except KeyError:
+            except (KeyError, UnboundLocalError) as e:
                 # If this error is reached, you want to add a new parse_rra_... function that will parse the new format!
                 debug("Unsupported RRA version {}. rra2json needs to add explicit support before it can be parsed. Skipping RRA {} - id {}.".format(rra_version, sheets[s.id], s.id))
+                continue
 
             try:
                 rrajsondoc = parse_rra(gc, s, sheets[s.id], rra_version, DotDict(dict(copy.deepcopy(rrajson_skel))), list(data_levels),
