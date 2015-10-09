@@ -20,11 +20,11 @@
 	},
 	/* Data levels
 	 */
-	"data_levels": [],
+	"data_levels": ["PUBLIC", "CONFIDENTIAL INTERNAL", "CONFIDENTIAL RESTRICTED", "CONFIDENTIAL SECRET"],
 
 	/* Risk standard levels
 	 */
-	"risk_levels": [],
+	"risk_levels": ["Unknown", "LOW", "MEDIUM", "HIGH", "MAXIMUM"],
 
 	/* JSON Document syntax for RRAs 
 	 * /!\ WARNING /!\ If you modify this, you'll have to modify the code, too
