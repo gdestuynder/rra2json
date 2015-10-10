@@ -350,7 +350,10 @@ def parse_rra_230(gc, sheet, name, version, rrajson, data_levels, risk_levels):
 
         for d in data_levels:
             if data_level == d:
-                data[d].append(data_type)
+                try:
+                    data[d].append(data_type)
+                except KeyError:
+                    data[d] = [data_type]
 
     C = rrajson.details.risk.confidentiality
     I = rrajson.details.risk.integrity
