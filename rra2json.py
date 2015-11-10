@@ -217,6 +217,15 @@ def validate_entry(value, allowed):
         return value.strip('\n')
     return 'Unknown'
 
+def fuzzy_find_team_name(value):
+    '''
+    Takes a field that looks like a team name and attempt to find the.. actual real team name.
+    '''
+    newval = value.split(',')[0]
+    if len(newval) == 0 or newval == None:
+        return value
+    return newval
+
 def parse_rra_100(gc, sheet, name, version, rrajson, data_levels, risk_levels):
     '''
     called by parse_rra virtual function wrapper
@@ -245,13 +254,13 @@ def parse_rra_100(gc, sheet, name, version, rrajson, data_levels, risk_levels):
 
     metadata.scope = cell_value_near(sheet_data, 'Scope')
     try:
-        metadata.owner = cell_value_near(sheet_data, 'Project, Data owner') + ' ' + cell_value_near(sheet_data, 'Project, Data owner', xmoves=2)
+        metadata.owner = fuzzy_find_team_name(cell_value_near(sheet_data, 'Project, Data owner') + ' ' + cell_value_near(sheet_data, 'Project, Data owner', xmoves=2))
     except IndexError:
         #<100 format, really
-        metadata.owner = cell_value_near(sheet_data, 'Owner') + ' ' + cell_value_near(sheet_data, 'Owner', xmoves=2)
+        metadata.owner = fuzzy_find_team_name(cell_value_near(sheet_data, 'Owner') + ' ' + cell_value_near(sheet_data, 'Owner', xmoves=2))
 
-    metadata.developer = cell_value_near(sheet_data, 'Developer') + ' ' + cell_value_near(sheet_data, 'Developer', xmoves=2)
-    metadata.operator = cell_value_near(sheet_data, 'Operator') + ' ' + cell_value_near(sheet_data, 'Operator', xmoves=2)
+    metadata.developer = fuzzy_find_team_name(cell_value_near(sheet_data, 'Developer') + ' ' + cell_value_near(sheet_data, 'Developer', xmoves=2))
+    metadata.operator = fuzzy_find_team_name(cell_value_near(sheet_data, 'Operator') + ' ' + cell_value_near(sheet_data, 'Operator', xmoves=2))
 
     rrajson.summary = 'RRA for {}'.format(metadata.service)
     rrajson.timestamp = toUTC(datetime.now()).isoformat()
@@ -312,9 +321,9 @@ def parse_rra_230(gc, sheet, name, version, rrajson, data_levels, risk_levels):
         return None
 
     metadata.scope = cell_value_near(sheet_data, 'RRA Scope')
-    metadata.owner = cell_value_near(sheet_data, 'Service owner')
-    metadata.developer = cell_value_near(sheet_data, 'Developer')
-    metadata.operator = cell_value_near(sheet_data, 'Operator')
+    metadata.owner = fuzzy_find_team_name(cell_value_near(sheet_data, 'Service owner'))
+    metadata.developer = fuzzy_find_team_name(cell_value_near(sheet_data, 'Developer'))
+    metadata.operator = fuzzy_find_team_name(cell_value_near(sheet_data, 'Operator'))
 
     rrajson.summary = 'RRA for {}'.format(metadata.service)
     rrajson.timestamp = toUTC(datetime.now()).isoformat()
@@ -422,9 +431,9 @@ def parse_rra_243(gc, sheet, name, version, rrajson, data_levels, risk_levels):
         return None
 
     metadata.scope = cell_value_near(sheet_data, 'RRA Scope')
-    metadata.owner = cell_value_near(sheet_data, 'Service owner')
-    metadata.developer = cell_value_near(sheet_data, 'Developer')
-    metadata.operator = cell_value_near(sheet_data, 'Operator')
+    metadata.owner = fuzzy_find_team_name(cell_value_near(sheet_data, 'Service owner'))
+    metadata.developer = fuzzy_find_team_name(cell_value_near(sheet_data, 'Developer'))
+    metadata.operator = fuzzy_find_team_name(cell_value_near(sheet_data, 'Operator'))
 
     rrajson.summary = 'RRA for {}'.format(metadata.service)
     rrajson.timestamp = toUTC(datetime.now()).isoformat()
@@ -531,9 +540,9 @@ def parse_rra_241(gc, sheet, name, version, rrajson, data_levels, risk_levels):
         return None
 
     metadata.scope = cell_value_near(sheet_data, 'RRA Scope')
-    metadata.owner = cell_value_near(sheet_data, 'Service owner')
-    metadata.developer = cell_value_near(sheet_data, 'Developer')
-    metadata.operator = cell_value_near(sheet_data, 'Operator')
+    metadata.owner = fuzzy_find_team_name(cell_value_near(sheet_data, 'Service owner'))
+    metadata.developer = fuzzy_find_team_name(cell_value_near(sheet_data, 'Developer'))
+    metadata.operator = fuzzy_find_team_name(cell_value_near(sheet_data, 'Operator'))
 
     rrajson.summary = 'RRA for {}'.format(metadata.service)
     rrajson.timestamp = toUTC(datetime.now()).isoformat()
