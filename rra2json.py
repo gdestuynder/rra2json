@@ -221,7 +221,7 @@ def fuzzy_find_team_name(value):
     '''
     Takes a field that looks like a team name and attempt to find the.. actual real team name.
     '''
-    newval = value.split(',')[0]
+    newval = value.strip().split(',')[0]
     if len(newval) == 0 or newval == None:
         return value
     return newval
