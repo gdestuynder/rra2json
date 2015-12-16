@@ -509,6 +509,13 @@ def parse_rra_243(gc, sheet, name, version, rrajson, data_levels, risk_levels):
 
     return rrajson
 
+def parse_rra_245(gc, sheet, name, version, rrajson, data_levels, risk_levels):
+    '''
+    244 and 245 are about the same
+    '''
+    return parse_rra_244(gc, sheet, name, version, rrajson, data_levels, risk_levels)
+
+
 def parse_rra_244(gc, sheet, name, version, rrajson, data_levels, risk_levels):
     '''
     243 and 244 are about the same
