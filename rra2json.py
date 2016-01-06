@@ -251,9 +251,9 @@ def parse_rra_250(gc, sheet, name, version, rrajson, data_levels, risk_levels):
         return None
 
     metadata.scope = cell_value_near(sheet_data, 'RRA Scope')
-    metadata.owner = fuzzy_find_team_name(cell_value_near(sheet_data, 'Service owner'))
-    metadata.developer = fuzzy_find_team_name(cell_value_near(sheet_data, 'Developer'))
-    metadata.operator = fuzzy_find_team_name(cell_value_near(sheet_data, 'Operator'))
+    metadata.owner = cell_value_near(sheet_data, 'Service owner')
+    metadata.developer = cell_value_near(sheet_data, 'Developer')
+    metadata.operator = cell_value_near(sheet_data, 'Operator')
 
     rrajson.summary = 'RRA for {}'.format(metadata.service)
     rrajson.timestamp = toUTC(datetime.now()).isoformat()
@@ -300,22 +300,22 @@ def parse_rra_250(gc, sheet, name, version, rrajson, data_levels, risk_levels):
     I.productivity.impact = validate_entry(cell_value_near(sheet_data, 'Impact', xmoves=0, ymoves=8), risk_levels)
     I.finances.impact = validate_entry(cell_value_near(sheet_data, 'Impact', xmoves=0, ymoves=9), risk_levels)
 
-    C.reputation.rationale = cell_value_near(sheet_data, 'Rationale', xmoves=0, ymoves=1)
-    C.productivity.rationale = cell_value_near(sheet_data, 'Rationale', xmoves=0, ymoves=2)
-    C.finances.rationale = cell_value_near(sheet_data, 'Rationale', xmoves=0, ymoves=3)
-    A.reputation.rationale = cell_value_near(sheet_data, 'Rationale', xmoves=0, ymoves=4)
-    A.productivity.rationale = cell_value_near(sheet_data, 'Rationale', xmoves=0, ymoves=5)
-    A.finances.rationale = cell_value_near(sheet_data, 'Rationale', xmoves=0, ymoves=6)
-    I.reputation.rationale = cell_value_near(sheet_data, 'Rationale', xmoves=0, ymoves=7)
-    I.productivity.rationale = cell_value_near(sheet_data, 'Rationale', xmoves=0, ymoves=8)
-    I.finances.rationale = cell_value_near(sheet_data, 'Rationale', xmoves=0, ymoves=9)
+    C.reputation.rationale = cell_value_near(sheet_data, 'Threats, use-cases, rationales', xmoves=0, ymoves=1)
+    C.productivity.rationale = cell_value_near(sheet_data, 'Threats, use-cases, rationales', xmoves=0, ymoves=2)
+    C.finances.rationale = cell_value_near(sheet_data, 'Threats, use-cases, rationales', xmoves=0, ymoves=3)
+    A.reputation.rationale = cell_value_near(sheet_data, 'Threats, use-cases, rationales', xmoves=0, ymoves=4)
+    A.productivity.rationale = cell_value_near(sheet_data, 'Threats, use-cases, rationales', xmoves=0, ymoves=5)
+    A.finances.rationale = cell_value_near(sheet_data, 'Threats, use-cases, rationales', xmoves=0, ymoves=6)
+    I.reputation.rationale = cell_value_near(sheet_data, 'Threats, use-cases, rationales', xmoves=0, ymoves=7)
+    I.productivity.rationale = cell_value_near(sheet_data, 'Threats, use-cases, rationales', xmoves=0, ymoves=8)
+    I.finances.rationale = cell_value_near(sheet_data, 'Threats, use-cases, rationales', xmoves=0, ymoves=9)
 
     #Depending on the weather this field is called Probability or Likelihood... the format is otherwise identical.
     try:
         probability = 'Probability'
         C.reputation.probability = validate_entry(cell_value_near(sheet_data, probability, xmoves=0, ymoves=1), risk_levels)
     except IndexError:
-        probability = 'Likelihood'
+        probability = 'Est. Probability'
         C.reputation.probability = validate_entry(cell_value_near(sheet_data, probability, xmoves=0, ymoves=1), risk_levels)
 
     C.productivity.probability = validate_entry(cell_value_near(sheet_data, probability, xmoves=0, ymoves=2), risk_levels)
