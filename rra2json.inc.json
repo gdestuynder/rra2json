@@ -63,47 +63,56 @@
 			"LOW": [],
 			"MEDIUM": [],
 			"HIGH": [],
-			"MAXIMUM: []
+			"MAXIMUM": []
 		    },
 		    "risk": {
 			"confidentiality": {
 			    "reputation": {
+				"rationale": "",
 				"impact": "",
 				"probability": ""
 			    },
 			    "finances": {
+				"rationale": "",
 				"impact": "",
 				"probability": ""
 			    },
 			    "productivity": {
+				"rationale": "",
 				"impact": "",
 				"probability": ""
 			    }
 			},
 			"integrity": {
 			    "reputation": {
+				"rationale": "",
 				"impact": "",
 				"probability": ""
 			    },
 			    "finances": {
+				"rationale": "",
 				"impact": "",
 				"probability": ""
 			    },
 			    "productivity": {
+				"rationale": "",
 				"impact": "",
 				"probability": ""
 			    }
 			},
 			"availability": {
 			    "reputation": {
+				"rationale": "",
 				"impact": "",
 				"probability": ""
 			    },
 			    "finances": {
+				"rationale": "",
 				"impact": "",
 				"probability": ""
 			    },
 			    "productivity": {
+				"rationale": "",
 				"impact": "",
 				"probability": ""
 			    }
