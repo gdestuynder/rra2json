@@ -38,7 +38,8 @@
 		"severity": "INFO",
 		"tags": [
 		    "RRA",
-		    "service"
+		    "service",
+		    "1.0.0"
 		],
 		"details": {
 		    "metadata": {
