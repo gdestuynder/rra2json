@@ -56,6 +56,13 @@
 			"CONFIDENTIAL RESTRICTED": [],
 			"CONFIDENTIAL SECRET": []
 		    },
+		    "recommendations": {
+			"Unknown": [],
+			"LOW": [],
+			"MEDIUM": [],
+			"HIGH": [],
+			"MAXIMUM: []
+		    },
 		    "risk": {
 			"confidentiality": {
 			    "reputation": {
