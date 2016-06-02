@@ -253,6 +253,7 @@ def parse_rra_251(gc, sheet, name, version, rrajson, data_levels, risk_levels):
     metadata.owner = cell_value_near(sheet_data, 'Service owner')
     metadata.developer = cell_value_near(sheet_data, 'Developer')
     metadata.operator = cell_value_near(sheet_data, 'Operator')
+    metadata.risk_record = cell_value_near(sheet_data, 'Risk Record')
 
     rrajson.summary = 'RRA for {}'.format(metadata.service)
     rrajson.timestamp = toUTC(datetime.now()).isoformat()
