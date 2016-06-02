@@ -36,13 +36,16 @@ has no accesses.
 JSON Format
 ===========
 
+See the file rra2json.inc.json that is included for the exact and complete format. Here's an approximation of what
+you'll get though:
+
   ::
 
   {
   'source': '1deadbeef-Mju0niB5gZaxy5uZ24_kuJiN6wOSyIx3JJRAyks',
   'timestamp': '2015-05-11T15:50:13.185754+00:00',
   'summary': 'RRA for <something>',
-  'tags': ['RRA', 'service'],
+  'tags': ['RRA', 'service', '1.0.0'],
   'severity': 'INFO',
   'lastmodified': '2015-05-09T01:18:55.850000+00:00',
   'category': 'rra_data',
@@ -69,6 +72,7 @@ JSON Format
                 'description': 'A service to do <something>',
                 'developer': 'Dev Team, J.Doe',
                 'operator': 'IT Team, J.Doe',
+                'RRA_version': '2.5.0',
                 'scope': 'The <something> part of the <something service>'
         },
         'data': {

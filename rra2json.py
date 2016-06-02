@@ -890,6 +890,10 @@ def main():
                 if rrajsondoc == None:
                     debug('Document {} ({}) could not be parsed and is probably not an RRA'.format(sheets[s.id], s.id))
                     continue
+
+                # Set RRA version outside of processing functions to ensure it's always set properly, regardless of how
+                # parsing is done.
+                rrajsondoc.details.metadata.RRA_version = rra_version
             except:
                 import traceback
                 traceback.print_exc()
