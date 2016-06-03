@@ -10,6 +10,7 @@
 
 from oauth2client.client import SignedJwtAssertionCredentials
 import gspread
+import os
 import hjson as json
 from xml.etree import ElementTree as et
 import sys
@@ -42,10 +43,13 @@ def debug(msg):
 def toUTC(suspectedDate, localTimeZone=None):
     '''Anything => UTC date. Magic.'''
     if (localTimeZone == None):
-        try:
-            localTimeZone = '/'.join(os.path.realpath('/etc/localtime').split('/')[-2:])
-        except:
-            localTimeZone = 'UTC'
+        if (len(os.environ['TZ']) > 0):
+            localTimeZone = os.environ['TZ']
+        else:
+            try:
+                localTimeZone = '/'.join(os.path.realpath('/etc/localtime').split('/')[-2:])
+            except:
+                localTimeZone = 'UTC'
     utc = pytz.UTC
     objDate = None
     if (type(suspectedDate) == str):
@@ -245,11 +249,11 @@ def normalize_data_level(value):
         return 'INTERNAL'
 
     if data_level in ['RESTRICTED', 'CONFIDENTIAL RESTRICTED', 'WORKGROUP', 'WORK GROUP',
-            'MOZILLA CONFIDENTIAL - SPECIFIC WORK GROUPS ONLY', 'MOZILLA CONFIDENTIAL - WORK GROUPS ONLY']:
+            'MOZILLA CONFIDENTIAL - SPECIFIC WORK GROUPS ONLY', 'MOZILLA CONFIDENTIAL WORK GROUPS ONLY']:
         return 'RESTRICTED'
 
     if data_level in ['SECRET', 'CONFIDENTIAL SECRET', 'INDIVIDUAL',
-            'MOZILLA CONFIDENTIAL - SPECIFIC INDIVIDUALS ONLY', 'MOZILLA CONFIDENTIAL - INDIVIDUAL ONLY']:
+            'MOZILLA CONFIDENTIAL - SPECIFIC INDIVIDUALS ONLY', 'MOZILLA CONFIDENTIAL INDIVIDUAL ONLY']:
         return 'SECRET'
 
     #If all else fails, do not normalize, though mozdef will probably reject our value
@@ -878,6 +882,7 @@ def parse_rra_100(gc, sheet, name, version, rrajson, data_levels, risk_levels):
     return rrajson
 
 def main():
+    os.environ['TZ']='UTC'
     with open('rra2json.json') as fd:
         config = json.load(fd)
         rra2jsonconfig = config['rra2json']
