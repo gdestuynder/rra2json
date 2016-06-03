@@ -290,7 +290,7 @@ def parse_rra_251(gc, sheet, name, version, rrajson, data_levels, risk_levels):
     rrajson.lastmodified = toUTC(s.updated).isoformat()
 
     data = rrajson.details.data
-    data.default = cell_value_near(sheet_data, 'Service Data classification', xmoves=2)
+    data.default = normalize_data_level(cell_value_near(sheet_data, 'Service Data classification', xmoves=2))
 
     # Step two.. find/list all data dictionnary
     res = [match for match in list_find(sheet_data, 'Data Classification')][0]
@@ -408,7 +408,7 @@ def parse_rra_250(gc, sheet, name, version, rrajson, data_levels, risk_levels):
     rrajson.lastmodified = toUTC(s.updated).isoformat()
 
     data = rrajson.details.data
-    data.default = cell_value_near(sheet_data, 'Service Data classification', xmoves=2)
+    data.default = normalize_data_level(cell_value_near(sheet_data, 'Service Data classification', xmoves=2))
 
     #Find/list all data dictionnary
     res = [match for match in list_find(sheet_data, 'Data Classification')][0]
@@ -524,7 +524,7 @@ def parse_rra_243(gc, sheet, name, version, rrajson, data_levels, risk_levels):
     rrajson.lastmodified = toUTC(s.updated).isoformat()
 
     data = rrajson.details.data
-    data.default = cell_value_near(sheet_data, 'Service Data classification', xmoves=2)
+    data.default = normalize_data_level(cell_value_near(sheet_data, 'Service Data classification', xmoves=2))
 
     #Find/list all data dictionnary
     res = [match for match in list_find(sheet_data, 'Data Classification')][0]
@@ -634,7 +634,7 @@ def parse_rra_241(gc, sheet, name, version, rrajson, data_levels, risk_levels):
     rrajson.lastmodified = toUTC(s.updated).isoformat()
 
     data = rrajson.details.data
-    data.default = cell_value_near(sheet_data, 'Service Data classification', xmoves=2)
+    data.default = normalize_data_level(cell_value_near(sheet_data, 'Service Data classification', xmoves=2))
 
     #Find/list all data dictionnary
     res = [match for match in list_find(sheet_data, 'Data Classification')][0]
@@ -744,9 +744,9 @@ def parse_rra_230(gc, sheet, name, version, rrajson, data_levels, risk_levels):
 
     data = rrajson.details.data
     try:
-        data.default = cell_value_near(sheet_data, 'Data classification', xmoves=2)
+        data.default = normalize_data_level(cell_value_near(sheet_data, 'Data classification', xmoves=2))
     except IndexError:
-        data.default = cell_value_near(sheet_data, 'Data classification of primary service', xmoves=2)
+        data.default = normalize_data_level(cell_value_near(sheet_data, 'Data classification of primary service', xmoves=2))
 
     #Find/list all data dictionnary
     i = 0
