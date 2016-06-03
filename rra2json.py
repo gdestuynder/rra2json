@@ -240,16 +240,16 @@ def normalize_data_level(value):
     if data_level in ['PUBLIC']:
         return 'PUBLIC'
 
-    if data_level in ['INTERNAL', 'CONFIDENTIAL INTERNAL', 'STAFF', 'NDA'
+    if data_level in ['INTERNAL', 'CONFIDENTIAL INTERNAL', 'STAFF', 'NDA',
             'MOZILLA CONFIDENTIAL - STAFF AND NDA\'D MOZILLIANS ONLY']:
         return 'INTERNAL'
 
     if data_level in ['RESTRICTED', 'CONFIDENTIAL RESTRICTED', 'WORKGROUP', 'WORK GROUP',
-            'MOZILLA CONFIDENTIAL - SPECIFIC WORK GROUPS ONLY']:
+            'MOZILLA CONFIDENTIAL - SPECIFIC WORK GROUPS ONLY', 'MOZILLA CONFIDENTIAL - WORK GROUPS ONLY']:
         return 'RESTRICTED'
 
     if data_level in ['SECRET', 'CONFIDENTIAL SECRET', 'INDIVIDUAL',
-            'MOZILLA CONFIDENTIAL - SPECIFIC INDIVIDUALS ONLY']:
+            'MOZILLA CONFIDENTIAL - SPECIFIC INDIVIDUALS ONLY', 'MOZILLA CONFIDENTIAL - INDIVIDUAL ONLY']:
         return 'SECRET'
 
     #If all else fails, do not normalize, though mozdef will probably reject our value
