@@ -225,6 +225,36 @@ def fuzzy_find_team_name(value):
         return value
     return newval
 
+def normalize_data_level(value):
+    '''
+    Takes a data level such as "Unknown", "PUBLIC", "CONFIDENTIAL INTERNAL", etc. and attempt to normalize it.
+    /!\ This function needs to be synchronized with your data_levels if they're modified.
+    This function is hardcoded as having a generic map would make little sense to most outside of Mozilla, and things
+    will still work if this function is not normalizing anything. Hurrai hacks!
+    '''
+
+    data_level = value.upper()
+    if data_level in ['UNKNOWN']:
+        return 'UNKNOWN'
+
+    if data_level in ['PUBLIC']:
+        return 'PUBLIC'
+
+    if data_level in ['INTERNAL', 'CONFIDENTIAL INTERNAL', 'STAFF', 'NDA'
+            'MOZILLA CONFIDENTIAL - STAFF AND NDA\'D MOZILLIANS ONLY']:
+        return 'INTERNAL'
+
+    if data_level in ['RESTRICTED', 'CONFIDENTIAL RESTRICTED', 'WORKGROUP', 'WORK GROUP',
+            'MOZILLA CONFIDENTIAL - SPECIFIC WORK GROUPS ONLY']:
+        return 'RESTRICTED'
+
+    if data_level in ['SECRET', 'CONFIDENTIAL SECRET', 'INDIVIDUAL',
+            'MOZILLA CONFIDENTIAL - SPECIFIC INDIVIDUALS ONLY']:
+        return 'SECRET'
+
+    #If all else fails, do not normalize, though mozdef will probably reject our value
+    return value
+
 def parse_rra_251(gc, sheet, name, version, rrajson, data_levels, risk_levels):
     '''
     called by parse_rra virtual function wrapper
@@ -272,7 +302,7 @@ def parse_rra_251(gc, sheet, name, version, rrajson, data_levels, risk_levels):
     # the 100 limit is a safeguard in case the loop goes wrong due to unexpected data in the sheet
     while ((i != -1) and (i<100)):
         i = i+1
-        data_level = sheet_data[res[0]+i][res[1]]
+        data_level = normalize_data_level(sheet_data[res[0]+i][res[1]])
         data_type = sheet_data[res[0]+i][res[1]-2].strip('\n')
         if data_level == '':
             #Bail out - list ended/data not found/list broken/etc.
@@ -390,7 +420,7 @@ def parse_rra_250(gc, sheet, name, version, rrajson, data_levels, risk_levels):
     # the 100 limit is a safeguard in case the loop goes wrong due to unexpected data in the sheet
     while ((i != -1) and (i<100)):
         i = i+1
-        data_level = sheet_data[res[0]+i][res[1]]
+        data_level = normalize_data_level(sheet_data[res[0]+i][res[1]])
         data_type = sheet_data[res[0]+i][res[1]-2].strip('\n')
         if data_level == '':
             #Bail out - list ended/data not found/list broken/etc.
@@ -506,7 +536,7 @@ def parse_rra_243(gc, sheet, name, version, rrajson, data_levels, risk_levels):
     # the 100 limit is a safeguard in case the loop goes wrong due to unexpected data in the sheet
     while ((i != -1) and (i<100)):
         i = i+1
-        data_level = sheet_data[res[0]+i][res[1]]
+        data_level = normalize_data_level(sheet_data[res[0]+i][res[1]])
         data_type = sheet_data[res[0]+i][res[1]-2].strip('\n')
         if data_level == '':
             #Bail out - list ended/data not found/list broken/etc.
@@ -616,7 +646,7 @@ def parse_rra_241(gc, sheet, name, version, rrajson, data_levels, risk_levels):
     # the 100 limit is a safeguard in case the loop goes wrong due to unexpected data in the sheet
     while ((i != -1) and (i<100)):
         i = i+1
-        data_level = sheet_data[res[0]+i][res[1]]
+        data_level = normalize_data_level(sheet_data[res[0]+i][res[1]])
         data_type = sheet_data[res[0]+i][res[1]-2].strip('\n')
         if data_level == '':
             #Bail out - list ended/data not found/list broken/etc.
@@ -733,7 +763,7 @@ def parse_rra_230(gc, sheet, name, version, rrajson, data_levels, risk_levels):
     # the 100 limit is a safeguard in case the loop goes wrong due to unexpected data in the sheet
     while ((i != -1) and (i<100)):
         i = i+1
-        data_level = sheet_data[res[0]+i][res[1]]
+        data_level = normalize_data_level(sheet_data[res[0]+i][res[1]])
         data_type = sheet_data[res[0]+i][res[1]-2].strip('\n')
         if data_level == '':
             #Bail out - list ended/data not found/list broken/etc.

@@ -20,7 +20,7 @@
 	},
 	/* Data levels
 	 */
-	"data_levels": ["PUBLIC", "CONFIDENTIAL INTERNAL", "CONFIDENTIAL RESTRICTED", "CONFIDENTIAL SECRET"],
+	"data_levels": ["PUBLIC", "INTERNAL", "RESTRICTED", "SECRET"],
 
 	/* Risk standard levels
 	 */
@@ -55,9 +55,9 @@
 		    "data": {
 			"default": "",
 			"PUBLIC": [],
-			"CONFIDENTIAL INTERNAL": [],
-			"CONFIDENTIAL RESTRICTED": [],
-			"CONFIDENTIAL SECRET": []
+			"INTERNAL": [],
+			"RESTRICTED": [],
+			"SECRET": []
 		    },
 		    "recommendations": {
 			"Unknown": [],
