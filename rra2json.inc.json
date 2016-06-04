@@ -39,7 +39,7 @@
 		"tags": [
 		    "RRA",
 		    "service",
-		    "1.0.0"
+		    "1.0.1"
 		],
 		"details": {
 		    "metadata": {
@@ -49,6 +49,7 @@
 			"owner": "",
 			"developer": "",
 			"operator": "",
+			"linked_services": "",
 			"risk_record": "",
 			"RRA_version": ""
 			},

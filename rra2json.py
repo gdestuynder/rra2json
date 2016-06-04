@@ -11,6 +11,8 @@
 from oauth2client.client import SignedJwtAssertionCredentials
 import gspread
 import os
+import io
+import tokenize
 import hjson as json
 from xml.etree import ElementTree as et
 import sys
@@ -220,6 +222,21 @@ def validate_entry(value, allowed):
         return value.strip('\n')
     return 'Unknown'
 
+def quick_tokenizer(value, token_max_val=5):
+    '''
+    Takes a string and attempts to tokenize it, then return a list of items found.
+    token_max_val is the max amount of occurence to consider a word rare enough that it must not be a token, but is
+    actual data instead.
+    @value: str
+    @token_max_val: int
+    '''
+    val = []
+    g = tokenize.tokenize(io.BytesIO(value.encode('utf-8')).readline)
+    for tn, tv, _, _, _ in g:
+        if (tn < token_max_val):
+            val.append(tv)
+    return val
+
 def fuzzy_find_team_name(value):
     '''
     Takes a field that looks like a team name and attempt to find the.. actual real team name.
@@ -287,6 +304,7 @@ def parse_rra_251(gc, sheet, name, version, rrajson, data_levels, risk_levels):
     metadata.owner = cell_value_near(sheet_data, 'Service owner')
     metadata.developer = cell_value_near(sheet_data, 'Developer')
     metadata.operator = cell_value_near(sheet_data, 'Operator')
+    metadata.linked_services = quick_tokenizer(cell_value_near(sheet_data, 'Linked services'))
     metadata.risk_record = cell_value_near(sheet_data, 'Risk Record')
 
     rrajson.summary = 'RRA for {}'.format(metadata.service)
@@ -406,6 +424,8 @@ def parse_rra_250(gc, sheet, name, version, rrajson, data_levels, risk_levels):
     metadata.owner = cell_value_near(sheet_data, 'Service owner')
     metadata.developer = cell_value_near(sheet_data, 'Developer')
     metadata.operator = cell_value_near(sheet_data, 'Operator')
+    metadata.linked_services = quick_tokenizer(cell_value_near(sheet_data, 'Linked services'))
+    metadata.risk_record = cell_value_near(sheet_data, 'Risk Record')
 
     rrajson.summary = 'RRA for {}'.format(metadata.service)
     rrajson.timestamp = toUTC(datetime.now()).isoformat()
@@ -522,6 +542,8 @@ def parse_rra_243(gc, sheet, name, version, rrajson, data_levels, risk_levels):
     metadata.owner = fuzzy_find_team_name(cell_value_near(sheet_data, 'Service owner'))
     metadata.developer = fuzzy_find_team_name(cell_value_near(sheet_data, 'Developer'))
     metadata.operator = fuzzy_find_team_name(cell_value_near(sheet_data, 'Operator'))
+    metadata.linked_services = quick_tokenizer(cell_value_near(sheet_data, 'Linked services'))
+    metadata.risk_record = cell_value_near(sheet_data, 'Risk Record')
 
     rrajson.summary = 'RRA for {}'.format(metadata.service)
     rrajson.timestamp = toUTC(datetime.now()).isoformat()
