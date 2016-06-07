@@ -12,7 +12,11 @@ from oauth2client.client import SignedJwtAssertionCredentials
 import gspread
 import os
 import io
-import tokenize
+from tokenize import generate_tokens
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
 import hjson as json
 from xml.etree import ElementTree as et
 import sys
@@ -231,7 +235,10 @@ def quick_tokenizer(value, token_max_val=5):
     @token_max_val: int
     '''
     val = []
-    g = tokenize.tokenize(io.BytesIO(value.encode('utf-8')).readline)
+    g= generate_tokens(StringIO(value).readline)
+    if (g == None):
+        debug("quick_tokenizer() could not generate tokens, returning raw value")
+        return val
     for tn, tv, _, _, _ in g:
         if (tn < token_max_val):
             val.append(tv)
