@@ -240,7 +240,7 @@ def quick_tokenizer(value, token_max_val=5):
         debug("quick_tokenizer() could not generate tokens, returning raw value")
         return val
     for tn, tv, _, _, _ in g:
-        if (tn < token_max_val):
+        if (tn < token_max_val) and (len(tv) > 0):
             val.append(tv)
     return val
 
