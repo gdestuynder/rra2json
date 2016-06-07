@@ -238,10 +238,20 @@ def quick_tokenizer(value, token_max_val=5):
     g= generate_tokens(StringIO(value).readline)
     if (g == None):
         debug("quick_tokenizer() could not generate tokens, returning raw value")
-        return val
+        return [value]
     for tn, tv, _, _, _ in g:
         if (tn < token_max_val) and (len(tv) > 0):
             val.append(tv)
+    return val
+
+def comma_tokenizer(value):
+    '''Tokenize by comma (",") and trim up spaces
+    @value: str
+    '''
+    val = []
+    for i in value.split(","):
+        if len(i) != 0:
+            val.append(i.strip().strip("\n"))
     return val
 
 def fuzzy_find_team_name(value):
@@ -311,7 +321,7 @@ def parse_rra_251(gc, sheet, name, version, rrajson, data_levels, risk_levels):
     metadata.owner = cell_value_near(sheet_data, 'Service owner')
     metadata.developer = cell_value_near(sheet_data, 'Developer')
     metadata.operator = cell_value_near(sheet_data, 'Operator')
-    metadata.linked_services = quick_tokenizer(cell_value_near(sheet_data, 'Linked services'))
+    metadata.linked_services = comma_tokenizer(cell_value_near(sheet_data, 'Linked services'))
     metadata.risk_record = cell_value_near(sheet_data, 'Risk Record')
 
     rrajson.summary = 'RRA for {}'.format(metadata.service)
@@ -431,7 +441,7 @@ def parse_rra_250(gc, sheet, name, version, rrajson, data_levels, risk_levels):
     metadata.owner = cell_value_near(sheet_data, 'Service owner')
     metadata.developer = cell_value_near(sheet_data, 'Developer')
     metadata.operator = cell_value_near(sheet_data, 'Operator')
-    metadata.linked_services = quick_tokenizer(cell_value_near(sheet_data, 'Linked services'))
+    metadata.linked_services = comma_tokenizer(cell_value_near(sheet_data, 'Linked services'))
     metadata.risk_record = cell_value_near(sheet_data, 'Risk Record')
 
     rrajson.summary = 'RRA for {}'.format(metadata.service)
@@ -549,7 +559,7 @@ def parse_rra_243(gc, sheet, name, version, rrajson, data_levels, risk_levels):
     metadata.owner = fuzzy_find_team_name(cell_value_near(sheet_data, 'Service owner'))
     metadata.developer = fuzzy_find_team_name(cell_value_near(sheet_data, 'Developer'))
     metadata.operator = fuzzy_find_team_name(cell_value_near(sheet_data, 'Operator'))
-    metadata.linked_services = quick_tokenizer(cell_value_near(sheet_data, 'Linked services'))
+    metadata.linked_services = comma_tokenizer(cell_value_near(sheet_data, 'Linked services'))
     metadata.risk_record = cell_value_near(sheet_data, 'Risk Record')
 
     rrajson.summary = 'RRA for {}'.format(metadata.service)
