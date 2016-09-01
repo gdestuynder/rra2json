@@ -973,7 +973,14 @@ def main():
                 traceback.print_exc()
                 debug('Exception occured while parsing RRA {} - id {}'.format(sheets[s.id], s.id))
             else:
-                post_rra_to_mozdef(config['mozdef'], rrajsondoc)
+                if rra2jsonconfig['debug'] == 'true':
+                    #Skip posting on debug
+                    debug('The RRA {} will not be saved in MozDef and is displayed here:'.format(sheets[s.id]))
+                    import pprint
+                    pp = pprint.PrettyPrinter()
+                    pp.pprint(rrajsondoc)
+                else:
+                    post_rra_to_mozdef(config['mozdef'], rrajsondoc)
 
             debug('Parsed {}: {}'.format(sheets[s.id], rra_version))
         else:
