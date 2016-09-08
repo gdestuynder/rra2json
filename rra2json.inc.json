@@ -1,6 +1,10 @@
 {
 	"rra2json": {
-		"debug": "true"
+		/* debug_level > 1 will show the JSON doc.
+		   no msg will be sent to mozdef if debug is enabled
+                */
+		"debug": "true",
+		"debug_level": 1
 	},
 	/* Your oauth2 credentials. See README on how to get these. */
 	"oauth2": {

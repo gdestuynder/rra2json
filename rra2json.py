@@ -187,10 +187,11 @@ def main():
             else:
                 if rra2jsonconfig['debug'] == 'true':
                     #Skip posting on debug
-                    debug('The RRA {} will not be saved in MozDef and is displayed here:'.format(sheets[s.id]))
-                    import pprint
-                    pp = pprint.PrettyPrinter()
-                    pp.pprint(rrajsondoc)
+                    if rra2jsonconfig['debug_level'] > 1:
+                        debug('The RRA {} will not be saved in MozDef and is displayed here:'.format(sheets[s.id]))
+                        import pprint
+                        pp = pprint.PrettyPrinter()
+                        pp.pprint(rrajsondoc)
                 else:
                     post_rra_to_mozdef(config['mozdef'], rrajsondoc)
 
