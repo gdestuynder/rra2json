@@ -11,13 +11,14 @@
 from oauth2client.client import SignedJwtAssertionCredentials
 import gspread
 import os
-import io
 import hjson as json
 from xml.etree import ElementTree as et
 import sys
 import mozdef_client as mozdef
 import collections
 import copy
+import parselib
+import bugzilla
 
 class DotDict(dict):
     '''dict.item notation for dict()'s'''
@@ -129,6 +130,68 @@ def check_last_update(gc, s):
     last_update = s.sheet1.updated
     return True
 
+def fill_bug(config, nag, source):
+    bcfg = config['bugzilla']
+    b = bugzilla.Bugzilla(url=bcfg['url'], api_key=bcfg['api_key'])
+
+    #Did we already report this?
+    terms = [{'product': bcfg['product']}, {'component': bcfg['component']},
+            {'creator': bcfg['creator']}, {'whiteboard': 'autoentry'},
+            {'resolution': ''},{'status': 'NEW'}, {'status': 'ASSIGNED'},
+            {'status': 'REOPENED'}, {'status': 'UNCONFIRMED'},
+            {'whiteboard': 'rra2json={}'.format(source)}
+            ]
+
+    bugs = b.search_bugs(terms)['bugs']
+    try:
+        bugzilla.DotDict(bugs[-1])
+        debug("bug for {} {} is already present, not re-filling".format(nag['title'], source))
+        return
+    except IndexError:
+        pass
+
+    #If not, report now
+    bug = bugzilla.DotDict()
+    bug.product = bcfg['product']
+    bug.component = bcfg['component']
+    bug.summary = nag['title']
+    bug.description = nag['body']
+    bug.whiteboard = 'autoentry rra2json={}'.format(source)
+    try:
+        ret = b.post_bug(bug)
+    except e:
+        debug("Filling bug failed: {}".format(e))
+    debug("Filled bug {} {}".format(nag['title'], ret))
+
+def verify_fields_and_nag(config, rrajsondoc):
+    """
+    If the RRA has not been touched for a certain about of days (configurable), and some critical fields are missing,
+    create a notification with the list of nags for the users to fix it.
+    More nags can be added to the list, and should be inside a dict. See the "risk record" nag below for example.
+    """
+    nags = []
+    # Only version 250+ supports fields that we check and nag for
+    if int(rrajsondoc.details.metadata.RRA_version) < 250:
+        return
+
+    # Only start nagging after X days without update
+    dt_now = parselib.toUTC()
+    dt_updated = parselib.toUTC(rrajsondoc.lastmodified)
+    delta = dt_now-dt_updated
+    if (delta.days < config['rra2json']['days_before_nag']):
+        return
+
+    # Having a risk record is required.
+    if (len(rrajsondoc.details.metadata.risk_record) < 2):
+        nags.append({"title": "Risk record missing", "body": "Please add a risk record to the RRA at https://docs.google.com/spreadsheets/d/{}".format(rrajsondoc.source)})
+
+    # We only know how to notify via bugzilla bugs right now
+    for n in nags:
+        fill_bug(config, n, rrajsondoc.source)
+
+    if len(nags) == 0:
+        return
+
 def main():
     os.environ['TZ']='UTC'
     with open('rra2json.json') as fd:
@@ -195,6 +258,7 @@ def main():
                 else:
                     post_rra_to_mozdef(config['mozdef'], rrajsondoc)
 
+            verify_fields_and_nag(config, rrajsondoc)
             debug('Parsed {}: {}'.format(sheets[s.id], rra_version))
         else:
             debug('Document {} ({}) could not be parsed and is probably not an RRA (no version detected)'.format(sheets[s.id], s.id))

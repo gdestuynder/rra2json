@@ -11,6 +11,7 @@ import pytz
 from datetime import datetime
 from dateutil.parser import parse
 from tokenize import generate_tokens
+import io
 try:
     from StringIO import StringIO
 except ImportError:

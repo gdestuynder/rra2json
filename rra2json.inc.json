@@ -4,7 +4,15 @@
 		   no msg will be sent to mozdef if debug is enabled
                 */
 		"debug": "true",
-		"debug_level": 1
+		"debug_level": 1,
+		"days_before_nag": 7
+	},
+	"bugzilla": {
+		"api_key": "",
+		"url": "https://bugzilla-dev.allizom.org/rest/",
+		"product": "",
+		"component": "",
+		"creator": ""
 	},
 	/* Your oauth2 credentials. See README on how to get these. */
 	"oauth2": {
