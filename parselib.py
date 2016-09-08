@@ -17,7 +17,7 @@ except ImportError:
     from io import StringIO
 import os
 
-def toUTC(suspectedDate, localTimeZone=None):
+def toUTC(suspectedDate=datetime.now(), localTimeZone=None):
     '''Anything => UTC date. Magic.'''
     if (localTimeZone == None):
         if (len(os.environ['TZ']) > 0):
