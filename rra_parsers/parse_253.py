@@ -91,7 +91,7 @@ def parse_rra(gc, sheet, name, version, rrajson, data_levels, risk_levels):
         probability = 'Probability'
         C.reputation.probability = validate_entry(cell_value_near(sheet_data, probability, xmoves=0, ymoves=1), risk_levels)
     except IndexError:
-        probability = 'Likelihood modifier'
+        probability = 'Likelihood Indicator'
         C.reputation.probability = validate_entry(cell_value_near(sheet_data, probability, xmoves=0, ymoves=1), risk_levels)
 
     C.productivity.probability = C.reputation.probability

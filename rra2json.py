@@ -12,6 +12,7 @@ from oauth2client.client import SignedJwtAssertionCredentials
 import gspread
 import os
 import hjson as json
+import json as rjson
 from xml.etree import ElementTree as et
 import sys
 import collections
@@ -19,7 +20,7 @@ import copy
 import parselib
 import bugzilla
 import requests
-import datetime.parser
+import dateutil.parser
 
 class DotDict(dict):
     '''dict.item notation for dict()'s'''
@@ -41,9 +42,9 @@ def debug(msg):
     sys.stderr.write('+++ {}\n'.format(msg))
 
 def post_rra_to_servicemap(cfg, rrajsondoc):
-    url = '{proto}://{host}:{port}/{endpoint}'.format(proto=cfg['proto'], host=cfg['host'],
+    url = '{proto}://{host}:{port}{endpoint}'.format(proto=cfg['proto'], host=cfg['host'],
                                                         port=cfg['port'], endpoint=cfg['endpoint'])
-    payload = {'rra': json.dumps(rrajsondoc)}
+    payload = {'rra': rjson.dumps(rrajsondoc)}
 
     if len(cfg['x509cert']) > 1:
         verify=cfg['x509cert']
@@ -53,11 +54,11 @@ def post_rra_to_servicemap(cfg, rrajsondoc):
         verify=False
 
     #Hack to get a version number, until this is fetched from the gdrive API
-    rrajsondoc['version'] = datetime.parser.parse(rrajsondoc['lastmodified']).strftime('%s')
+    rrajsondoc['version'] = dateutil.parser.parse(rrajsondoc['lastmodified']).strftime('%s')
 
     r = requests.post(url, data=payload, verify=verify)
-    if r.status_code != requests.code.ok:
-        fatal("Failed to send RRA to servicemap: {}".format(r.status_code))
+    if r.status_code != requests.codes.ok:
+        fatal("Failed to send RRA to servicemap (nag missing?): error code: {} message: {}".format(r.status_code, r.content))
 
 def gspread_authorize(email, private_key, scope, secret=None):
     '''
@@ -136,7 +137,7 @@ def check_last_update(gc, s):
     last_update = s.sheet1.updated
     return True
 
-def fill_bug(config, nag, source):
+def fill_bug(config, nags, source):
     bcfg = config['bugzilla']
     b = bugzilla.Bugzilla(url=bcfg['url'], api_key=bcfg['api_key'])
 
@@ -151,7 +152,7 @@ def fill_bug(config, nag, source):
     bugs = b.search_bugs(terms)['bugs']
     try:
         bugzilla.DotDict(bugs[-1])
-        debug("bug for {} {} is already present, not re-filling".format(nag['title'], source))
+        debug("bug for {} is already present, not re-filling".format(source))
         return
     except IndexError:
         pass
@@ -160,43 +161,52 @@ def fill_bug(config, nag, source):
     bug = bugzilla.DotDict()
     bug.product = bcfg['product']
     bug.component = bcfg['component']
-    bug.summary = nag['title']
-    bug.description = nag['body']
+    bug.summary = "There are {} issues with an RRA".format(len(nags))
+    bug.description = json.dumps(nags)
     bug.whiteboard = 'autoentry rra2json={}'.format(source)
     try:
         ret = b.post_bug(bug)
     except e:
         debug("Filling bug failed: {}".format(e))
-    debug("Filled bug {} {}".format(nag['title'], ret))
+    debug("Filled bug {} {}".format(source, ret))
 
 def verify_fields_and_nag(config, rrajsondoc):
     """
     If the RRA has not been touched for a certain about of days (configurable), and some critical fields are missing,
     create a notification with the list of nags for the users to fix it.
     More nags can be added to the list, and should be inside a dict. See the "risk record" nag below for example.
+    returns True if RRA can be posted, False if it cannot or should not (for ex missing fields, or exempt)
     """
     nags = []
     # Only version 250+ supports fields that we check and nag for
     if int(rrajsondoc.details.metadata.RRA_version) < 250:
-        return
+        return True
 
     # Only start nagging after X days without update
     dt_now = parselib.toUTC()
     dt_updated = parselib.toUTC(rrajsondoc.lastmodified)
     delta = dt_now-dt_updated
     if (delta.days < config['rra2json']['days_before_nag']):
-        return
+        return False
 
     # Having a risk record is required.
     if (len(rrajsondoc.details.metadata.risk_record) < 2):
         nags.append({"title": "Risk record missing", "body": "Please add a risk record to the RRA at https://docs.google.com/spreadsheets/d/{}".format(rrajsondoc.source)})
 
-    # We only know how to notify via bugzilla bugs right now
-    for n in nags:
-        fill_bug(config, n, rrajsondoc.source)
+    # Having a default data classification is required.
+    if (len(rrajsondoc.details.data.default) < 2):
+        nags.append({"title": "Default data classification missing", "body": "Please add a default (top-level) data classification to the RRA at https://docs.google.com/spreadsheets/d/{}".format(rrajsondoc.source)})
+
+    # Having a name is required.
+    if (len(rrajsondoc.details.metadata.service) < 2):
+        nags.append({"title": "There is no service name", "body": "Please add a service name to the RRA at https://docs.google.com/spreadsheets/d/{}".format(rrajsondoc.source)})
 
     if len(nags) == 0:
-        return
+        return True
+    else:
+        # We only know how to notify via bugzilla bugs right now
+        fill_bug(config, nags, rrajsondoc.source)
+        return False
 
 def main():
     os.environ['TZ']='UTC'
@@ -254,17 +264,14 @@ def main():
                 debug('Exception occured while parsing RRA {} - id {}'.format(sheets[s.id], s.id))
                 sys.exit(1)
             else:
-                if rra2jsonconfig['debug'] == 'true':
-                    #Skip posting on debug
-                    if rra2jsonconfig['debug_level'] > 1:
-                        debug('The RRA {} will not be sent to service-map and is displayed here:'.format(sheets[s.id]))
-                        import pprint
-                        pp = pprint.PrettyPrinter()
-                        pp.pprint(rrajsondoc)
-                else:
+                if rra2jsonconfig['debug_level'] > 1:
+                    import pprint
+                    pp = pprint.PrettyPrinter()
+                    pp.pprint(rrajsondoc)
+                success = verify_fields_and_nag(config, rrajsondoc)
+                if success:
                     post_rra_to_servicemap(config['servicemap'], rrajsondoc)
 
-            verify_fields_and_nag(config, rrajsondoc)
             debug('Parsed {}: {}'.format(sheets[s.id], rra_version))
         else:
             debug('Document {} ({}) could not be parsed and is probably not an RRA (no version detected)'.format(sheets[s.id], s.id))
