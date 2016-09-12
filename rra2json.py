@@ -14,11 +14,12 @@ import os
 import hjson as json
 from xml.etree import ElementTree as et
 import sys
-import mozdef_client as mozdef
 import collections
 import copy
 import parselib
 import bugzilla
+import requests
+import datetime.parser
 
 class DotDict(dict):
     '''dict.item notation for dict()'s'''
@@ -39,19 +40,24 @@ def fatal(msg):
 def debug(msg):
     sys.stderr.write('+++ {}\n'.format(msg))
 
-def post_rra_to_mozdef(cfg, rrajsondoc):
-    msg = mozdef.MozDefRRA('{proto}://{host}:{port}/custom/{rraindex}'.format(proto=cfg['proto'], host=cfg['host'],
-        port=cfg['port'], rraindex=cfg['rraindex']))
-    msg.set_fire_and_forget(False)
-    msg.category = rrajsondoc.category
-    msg.tags = rrajsondoc.tags
-    msg.summary = rrajsondoc.summary
-    msg.details = rrajsondoc.details
-    msg._updatelog = {}
-    msg._updatelog['lastmodified'] = rrajsondoc.lastmodified
-    msg._updatelog['source'] = rrajsondoc.source
-    msg._updatelog['utctimestamp'] = rrajsondoc.timestamp
-    msg.send()
+def post_rra_to_servicemap(cfg, rrajsondoc):
+    url = '{proto}://{host}:{port}/{endpoint}'.format(proto=cfg['proto'], host=cfg['host'],
+                                                        port=cfg['port'], endpoint=cfg['endpoint'])
+    payload = {'rra': json.dumps(rrajsondoc)}
+
+    if len(cfg['x509cert']) > 1:
+        verify=cfg['x509cert']
+    elif cfg['tls_verify'] == "true":
+        verify=True
+    else:
+        verify=False
+
+    #Hack to get a version number, until this is fetched from the gdrive API
+    rrajsondoc['version'] = datetime.parser.parse(rrajsondoc['lastmodified']).strftime('%s')
+
+    r = requests.post(url, data=payload, verify=verify)
+    if r.status_code != requests.code.ok:
+        fatal("Failed to send RRA to servicemap: {}".format(r.status_code))
 
 def gspread_authorize(email, private_key, scope, secret=None):
     '''
@@ -251,12 +257,12 @@ def main():
                 if rra2jsonconfig['debug'] == 'true':
                     #Skip posting on debug
                     if rra2jsonconfig['debug_level'] > 1:
-                        debug('The RRA {} will not be saved in MozDef and is displayed here:'.format(sheets[s.id]))
+                        debug('The RRA {} will not be sent to service-map and is displayed here:'.format(sheets[s.id]))
                         import pprint
                         pp = pprint.PrettyPrinter()
                         pp.pprint(rrajsondoc)
                 else:
-                    post_rra_to_mozdef(config['mozdef'], rrajsondoc)
+                    post_rra_to_servicemap(config['servicemap'], rrajsondoc)
 
             verify_fields_and_nag(config, rrajsondoc)
             debug('Parsed {}: {}'.format(sheets[s.id], rra_version))

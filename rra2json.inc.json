@@ -1,7 +1,7 @@
 {
 	"rra2json": {
 		/* debug_level > 1 will show the JSON doc.
-		   no msg will be sent to mozdef if debug is enabled
+		   no msg will be sent if debug is enabled
                 */
 		"debug": "true",
 		"debug_level": 1,
@@ -23,12 +23,13 @@
 		"type": "",
 		"spread_scope": "https://spreadsheets.google.com/feeds",
 	},
-	/* Your MozDef setup */
-	"mozdef": {
+	/* Your Service-map setup */
+	"servicemap": {
 		"host": "",
-		"port": 9200,
-		"proto": "http",
-		"rraindex": "rra"
+		"port": 443,
+		"proto": "https",
+		"tls_verify": "true",
+		"endpoint": "/api/v1/rra/update"
 	},
 	/* Data levels
 	 */

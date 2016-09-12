@@ -1,19 +1,7 @@
-Setup MozDef
-============
+This program integrates with service-map: https://github.com/mozilla/service-map
+It posts a JSON version of the Gdocs RRA documents to service-map, to be precise.
 
-Create the index
-----------------
-
-Edit 'mozdef_index_setup.sh' and...
-
-.. code::
-
-        $ ./mozdef_index_setup.sh
-
-Add the plugin
---------------
-
-Ensure your MozDef has the RRA plugin: https://github.com/jeffbryner/MozDef/blob/master/mq/plugins/rra.py
+See also: https://wiki.mozilla.org/Security/Risk_management/Rapid_Risk_Assessment
 
 Get oauth2 credentials
 ======================

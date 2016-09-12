@@ -171,7 +171,7 @@ def normalize_data_level(value):
             'MOZILLA CONFIDENTIAL - SPECIFIC INDIVIDUALS ONLY', 'MOZILLA CONFIDENTIAL INDIVIDUAL ONLY']:
         return 'SECRET'
 
-    #If all else fails, do not normalize, though mozdef will probably reject our value
+    #If all else fails, do not normalize
     return value
 
 
