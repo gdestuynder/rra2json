@@ -1,3 +1,0 @@
-[submodule "mozdef_client"]
-	path = mozdef_client
-	url = https://github.com/gdestuynder/mozdef_client
