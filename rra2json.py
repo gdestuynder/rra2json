@@ -58,7 +58,7 @@ def post_rra_to_servicemap(cfg, rrajsondoc):
 
     r = requests.post(url, data=payload, verify=verify)
     if r.status_code != requests.codes.ok:
-        fatal("Failed to send RRA to servicemap (nag missing?): error code: {} message: {}".format(r.status_code, r.content))
+        fatal("Failed to send RRA to servicemap (nag missing?): error code: {} message: {} rra: {}".format(r.status_code, r.content, rrajsondoc['source']))
 
 def gspread_authorize(email, private_key, scope, secret=None):
     '''
@@ -178,6 +178,7 @@ def verify_fields_and_nag(config, rrajsondoc):
     returns True if RRA can be posted, False if it cannot or should not (for ex missing fields, or exempt)
     """
     nags = []
+
     # Only version 250+ supports fields that we check and nag for
     if int(rrajsondoc.details.metadata.RRA_version) < 250:
         return True
