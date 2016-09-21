@@ -183,13 +183,6 @@ def verify_fields_and_nag(config, rrajsondoc):
     if int(rrajsondoc.details.metadata.RRA_version) < 250:
         return True
 
-    # Only start nagging after X days without update
-    dt_now = parselib.toUTC()
-    dt_updated = parselib.toUTC(rrajsondoc.lastmodified)
-    delta = dt_now-dt_updated
-    if (delta.days < config['rra2json']['days_before_nag']):
-        return False
-
     # Having a risk record is required.
     if (len(rrajsondoc.details.metadata.risk_record) < 2):
         nags.append({"title": "Risk record missing", "body": "Please add a risk record to the RRA at https://docs.google.com/spreadsheets/d/{}".format(rrajsondoc.source)})
@@ -205,6 +198,12 @@ def verify_fields_and_nag(config, rrajsondoc):
     if len(nags) == 0:
         return True
     else:
+        # Only start nagging after X days without update
+        dt_now = parselib.toUTC()
+        dt_updated = parselib.toUTC(rrajsondoc.lastmodified)
+        delta = dt_now-dt_updated
+        if (delta.days < config['rra2json']['days_before_nag']):
+            return False
         # We only know how to notify via bugzilla bugs right now
         fill_bug(config, nags, rrajsondoc.source)
         return False
