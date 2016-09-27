@@ -139,6 +139,11 @@ def check_last_update(gc, s):
 
 def fill_bug(config, nags, source):
     bcfg = config['bugzilla']
+
+    # If no API key has been specified, just skip this
+    if len(bcfg['api_key']) == 0:
+        return
+
     b = bugzilla.Bugzilla(url=bcfg['url'], api_key=bcfg['api_key'])
 
     #Did we already report this?
@@ -229,6 +234,10 @@ def main():
 
     if not gc:
         fatal('Authorization failed')
+
+    # Print a notice if the nag function is disabled
+    if len(config['bugzilla']['api_key']) == 0:
+        print('Notice, bugzilla nag function is disabled (no configured API key)')
 
     # Looking at the XML feed is the only way to get sheet document title for some reason.
     sheets = get_sheet_titles(gc)
