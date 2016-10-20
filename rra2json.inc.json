@@ -7,6 +7,9 @@
 		"debug_level": 1,
 		"days_before_nag": 7
 	},
+	/* Your bugzilla API credentials to post nag bugs, if
+	 * api_key is "" this functionality will be disabled
+	 */
 	"bugzilla": {
 		"api_key": "",
 		"url": "https://bugzilla-dev.allizom.org/rest/",
