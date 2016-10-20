@@ -237,7 +237,7 @@ def main():
 
     # Print a notice if the nag function is disabled
     if len(config['bugzilla']['api_key']) == 0:
-        print('Notice, bugzilla nag function is disabled (no configured API key)')
+        debug('Notice, bugzilla nag function is disabled (no configured API key)')
 
     # Looking at the XML feed is the only way to get sheet document title for some reason.
     sheets = get_sheet_titles(gc)
