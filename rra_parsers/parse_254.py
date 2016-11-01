@@ -27,7 +27,11 @@ def parse_rra(gc, sheet, name, version, rrajson, data_levels, risk_levels):
     metadata.owner = cell_value_near(sheet_data, 'Service owner')
     metadata.developer = cell_value_near(sheet_data, 'Developer')
     metadata.operator = cell_value_near(sheet_data, 'Operator')
-    metadata.analyst = cell_value_near(sheet_data, 'RRA Analyst')
+    try:
+        metadata.analyst = cell_value_near(sheet_data, 'RRA Analyst')
+    except IndexError:
+        metadata.analyst = cell_value_near(sheet_data, 'Risk Analyst')
+
     metadata.linked_services = comma_tokenizer(cell_value_near(sheet_data, 'Linked services'))
     metadata.risk_record = cell_value_near(sheet_data, 'Risk Record')
 
