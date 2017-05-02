@@ -137,7 +137,7 @@ def check_last_update(gc, s):
     last_update = s.sheet1.updated
     return True
 
-def fill_bug(config, nags, source):
+def fill_bug(config, nags, rrajsondoc):
     bcfg = config['bugzilla']
 
     # If no API key has been specified, just skip this
@@ -151,13 +151,13 @@ def fill_bug(config, nags, source):
             {'creator': bcfg['creator']}, {'whiteboard': 'autoentry'},
             {'resolution': ''},{'status': 'NEW'}, {'status': 'ASSIGNED'},
             {'status': 'REOPENED'}, {'status': 'UNCONFIRMED'},
-            {'whiteboard': 'rra2json={}'.format(source)}
+            {'whiteboard': 'rra2json={}'.format(rrajsondoc.source)}
             ]
 
     bugs = b.search_bugs(terms)['bugs']
     try:
         bugzilla.DotDict(bugs[-1])
-        debug("bug for {} is already present, not re-filling".format(source))
+        debug("bug for {} is already present, not re-filling".format(rrajsondoc.source))
         return
     except IndexError:
         pass
@@ -168,12 +168,24 @@ def fill_bug(config, nags, source):
     bug.component = bcfg['component']
     bug.summary = "There are {} issues with an RRA".format(len(nags))
     bug.description = json.dumps(nags)
-    bug.whiteboard = 'autoentry rra2json={}'.format(source)
+    bug.whiteboard = 'autoentry rra2json={}'.format(rrajsondoc.source)
+    if 'analyst' in rrajsondoc.details.metadata:
+        bug.assigned_to = rrajsondoc.details.metadata.analyst
     try:
         ret = b.post_bug(bug)
-    except e:
-        debug("Filling bug failed: {}".format(e))
-    debug("Filled bug {} {}".format(source, ret))
+        debug("Filled bug {} {}".format(rrajsondoc.source, ret))
+    except Exception as e:
+        # Code 51 = assigned_to user does not exist, just assign to default then
+        url, estr, ecode, edict = e.args
+        if edict['code'] == 51: 
+            del bug.assigned_to
+            try:
+                ret = b.post_bug(bug)
+                debug("Filled bug {} {}".format(rrajsondoc.source, ret))
+            except Exception as e1:
+                debug("Filling bug failed: {}".format(e1))
+        else:
+            debug("Filling bug failed: {}".format(e))
 
 def verify_fields_and_nag(config, rrajsondoc):
     """
@@ -207,10 +219,11 @@ def verify_fields_and_nag(config, rrajsondoc):
         dt_now = parselib.toUTC()
         dt_updated = parselib.toUTC(rrajsondoc.lastmodified)
         delta = dt_now-dt_updated
+
         if (delta.days < config['rra2json']['days_before_nag']):
             return False
         # We only know how to notify via bugzilla bugs right now
-        fill_bug(config, nags, rrajsondoc.source)
+        fill_bug(config, nags, rrajsondoc)
         return False
 
 def main():
