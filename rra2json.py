@@ -279,7 +279,10 @@ def main():
                     pp.pprint(rrajsondoc)
                 success = verify_fields_and_nag(config, rrajsondoc)
                 if success:
-                    post_rra_to_servicemap(config['servicemap'], rrajsondoc)
+                    if rra2jsonconfig['debug_level'] < 2:
+                        post_rra_to_servicemap(config['servicemap'], rrajsondoc)
+                    else:
+                        debug('Not posting RRA - debug mode')
 
             debug('Parsed {}: {}'.format(sheets[s.id], rra_version))
         else:
