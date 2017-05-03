@@ -23,6 +23,12 @@ import requests
 import dateutil.parser
 import pickle
 
+# Python2 fun
+try:
+    FileNotFoundError
+except NameError:
+    FileNotFoundError = IOError
+
 class DotDict(dict):
     '''dict.item notation for dict()'s'''
     __getattr__ = dict.__getitem__
