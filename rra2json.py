@@ -21,6 +21,7 @@ import parselib
 import bugzilla
 import requests
 import dateutil.parser
+import pickle
 
 class DotDict(dict):
     '''dict.item notation for dict()'s'''
@@ -137,6 +138,53 @@ def check_last_update(gc, s):
     last_update = s.sheet1.updated
     return True
 
+def autoassign_rras(config):
+    """This will search through unassigned RRA bugs and assign them automatically"""
+    bcfg = config['bugzilla']
+
+    # If no API key has been specified, just skip this
+    if len(bcfg['api_key']) == 0:
+        return
+
+    b = bugzilla.Bugzilla(url=bcfg['url'], api_key=bcfg['api_key'])
+
+    try:
+        with open(bcfg['cache'], 'rb') as f:
+            assign_list = pickle.load(f)
+    except FileNotFoundError:
+        debug("no current autoassign list found, using configured defaults")
+        assign_list = list(bcfg['autoassign'])
+
+    # Do we have any RRA in the queue?
+    terms = [{'product': bcfg['product']}, {'component': bcfg['component']},
+            {'status': 'NEW'}, {'status': 'UNCONFIRMED'}
+            ]
+
+    bugs = b.search_bugs(terms)['bugs']
+    try:
+        bugzilla.DotDict(bugs[-1])
+        debug("Found {} unassigned RRA(s). Assigning work!".format(len(bugs)))
+        for bug in bugs:
+            # Next assignee in the list, rotate
+            assignee = assign_list.pop()
+            assign_list.insert(0, assignee)
+            bug_up = bugzilla.DotDict()
+            bug_up.assigned_to = assignee
+            bug_up.status = 'ASSIGNED'
+            try:
+                debug("Updating bug {} assigning {}".format(bug['id'], assignee))
+                b.put_bug(bug['id'], bug_up)
+            except Exception as e:
+                debug("Failed to update bug {}: {}".format(bug['id'], e))
+
+        with open(bcfg['cache'], 'wb') as f:
+            pickle.dump(assign_list, f)
+
+    except IndexError:
+        debug("No unassigned RRAs")
+
+    sys.exit(1)
+
 def fill_bug(config, nags, rrajsondoc):
     bcfg = config['bugzilla']
 
@@ -252,6 +300,13 @@ def main():
     if len(config['bugzilla']['api_key']) == 0:
         debug('Notice, bugzilla nag function is disabled (no configured API key)')
 
+    # Use this opportunity to do some house keeping!
+    if len(config['bugzilla']['autoassign']) == 0:
+        debug("Notice, autoassign option is disabled")
+    else:
+        autoassign_rras(config)
+
+
     # Looking at the XML feed is the only way to get sheet document title for some reason.
     sheets = get_sheet_titles(gc)
     # Do not traverse sheets manually, it's very slow due to the API delays.
@@ -300,6 +355,12 @@ def main():
             debug('Parsed {}: {}'.format(sheets[s.id], rra_version))
         else:
             debug('Document {} ({}) could not be parsed and is probably not an RRA (no version detected)'.format(sheets[s.id], s.id))
+
+    # Use this opportunity to do some house keeping!
+    if len(config['bugzilla']['autoassign']) == 0:
+        debug("Notice, autoassign option is disabled")
+    else:
+        autoassign_rras(config)
 
 if __name__ == "__main__":
     main()
