@@ -15,7 +15,9 @@
 		"url": "https://bugzilla-dev.allizom.org/rest/",
 		"product": "",
 		"component": "",
-		"creator": ""
+		"creator": "",
+		"autoassign": [],
+		"cache": "/var/run/assignees.pickle"
 	},
 	/* Your oauth2 credentials. See README on how to get these. */
 	"oauth2": {

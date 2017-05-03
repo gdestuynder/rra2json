@@ -21,6 +21,7 @@ import parselib
 import bugzilla
 import requests
 import dateutil.parser
+import pickle
 
 class DotDict(dict):
     '''dict.item notation for dict()'s'''
@@ -137,7 +138,54 @@ def check_last_update(gc, s):
     last_update = s.sheet1.updated
     return True
 
-def fill_bug(config, nags, source):
+def autoassign_rras(config):
+    """This will search through unassigned RRA bugs and assign them automatically"""
+    bcfg = config['bugzilla']
+
+    # If no API key has been specified, just skip this
+    if len(bcfg['api_key']) == 0:
+        return
+
+    b = bugzilla.Bugzilla(url=bcfg['url'], api_key=bcfg['api_key'])
+
+    try:
+        with open(bcfg['cache'], 'rb') as f:
+            assign_list = pickle.load(f)
+    except FileNotFoundError:
+        debug("no current autoassign list found, using configured defaults")
+        assign_list = list(bcfg['autoassign'])
+
+    # Do we have any RRA in the queue?
+    terms = [{'product': bcfg['product']}, {'component': bcfg['component']},
+            {'status': 'NEW'}, {'status': 'UNCONFIRMED'}
+            ]
+
+    bugs = b.search_bugs(terms)['bugs']
+    try:
+        bugzilla.DotDict(bugs[-1])
+        debug("Found {} unassigned RRA(s). Assigning work!".format(len(bugs)))
+        for bug in bugs:
+            # Next assignee in the list, rotate
+            assignee = assign_list.pop()
+            assign_list.insert(0, assignee)
+            bug_up = bugzilla.DotDict()
+            bug_up.assigned_to = assignee
+            bug_up.status = 'ASSIGNED'
+            try:
+                debug("Updating bug {} assigning {}".format(bug['id'], assignee))
+                b.put_bug(bug['id'], bug_up)
+            except Exception as e:
+                debug("Failed to update bug {}: {}".format(bug['id'], e))
+
+        with open(bcfg['cache'], 'wb') as f:
+            pickle.dump(assign_list, f)
+
+    except IndexError:
+        debug("No unassigned RRAs")
+
+    sys.exit(1)
+
+def fill_bug(config, nags, rrajsondoc):
     bcfg = config['bugzilla']
 
     # If no API key has been specified, just skip this
@@ -151,13 +199,13 @@ def fill_bug(config, nags, source):
             {'creator': bcfg['creator']}, {'whiteboard': 'autoentry'},
             {'resolution': ''},{'status': 'NEW'}, {'status': 'ASSIGNED'},
             {'status': 'REOPENED'}, {'status': 'UNCONFIRMED'},
-            {'whiteboard': 'rra2json={}'.format(source)}
+            {'whiteboard': 'rra2json={}'.format(rrajsondoc.source)}
             ]
 
     bugs = b.search_bugs(terms)['bugs']
     try:
         bugzilla.DotDict(bugs[-1])
-        debug("bug for {} is already present, not re-filling".format(source))
+        debug("bug for {} is already present, not re-filling".format(rrajsondoc.source))
         return
     except IndexError:
         pass
@@ -168,12 +216,24 @@ def fill_bug(config, nags, source):
     bug.component = bcfg['component']
     bug.summary = "There are {} issues with an RRA".format(len(nags))
     bug.description = json.dumps(nags)
-    bug.whiteboard = 'autoentry rra2json={}'.format(source)
+    bug.whiteboard = 'autoentry rra2json={}'.format(rrajsondoc.source)
+    if 'analyst' in rrajsondoc.details.metadata:
+        bug.assigned_to = rrajsondoc.details.metadata.analyst
     try:
         ret = b.post_bug(bug)
-    except e:
-        debug("Filling bug failed: {}".format(e))
-    debug("Filled bug {} {}".format(source, ret))
+        debug("Filled bug {} {}".format(rrajsondoc.source, ret))
+    except Exception as e:
+        # Code 51 = assigned_to user does not exist, just assign to default then
+        url, estr, ecode, edict = e.args
+        if edict['code'] == 51: 
+            del bug.assigned_to
+            try:
+                ret = b.post_bug(bug)
+                debug("Filled bug {} {}".format(rrajsondoc.source, ret))
+            except Exception as e1:
+                debug("Filling bug failed: {}".format(e1))
+        else:
+            debug("Filling bug failed: {}".format(e))
 
 def verify_fields_and_nag(config, rrajsondoc):
     """
@@ -207,10 +267,11 @@ def verify_fields_and_nag(config, rrajsondoc):
         dt_now = parselib.toUTC()
         dt_updated = parselib.toUTC(rrajsondoc.lastmodified)
         delta = dt_now-dt_updated
+
         if (delta.days < config['rra2json']['days_before_nag']):
             return False
         # We only know how to notify via bugzilla bugs right now
-        fill_bug(config, nags, rrajsondoc.source)
+        fill_bug(config, nags, rrajsondoc)
         return False
 
 def main():
@@ -238,6 +299,13 @@ def main():
     # Print a notice if the nag function is disabled
     if len(config['bugzilla']['api_key']) == 0:
         debug('Notice, bugzilla nag function is disabled (no configured API key)')
+
+    # Use this opportunity to do some house keeping!
+    if len(config['bugzilla']['autoassign']) == 0:
+        debug("Notice, autoassign option is disabled")
+    else:
+        autoassign_rras(config)
+
 
     # Looking at the XML feed is the only way to get sheet document title for some reason.
     sheets = get_sheet_titles(gc)
@@ -279,11 +347,20 @@ def main():
                     pp.pprint(rrajsondoc)
                 success = verify_fields_and_nag(config, rrajsondoc)
                 if success:
-                    post_rra_to_servicemap(config['servicemap'], rrajsondoc)
+                    if rra2jsonconfig['debug_level'] < 2:
+                        post_rra_to_servicemap(config['servicemap'], rrajsondoc)
+                    else:
+                        debug('Not posting RRA - debug mode')
 
             debug('Parsed {}: {}'.format(sheets[s.id], rra_version))
         else:
             debug('Document {} ({}) could not be parsed and is probably not an RRA (no version detected)'.format(sheets[s.id], s.id))
+
+    # Use this opportunity to do some house keeping!
+    if len(config['bugzilla']['autoassign']) == 0:
+        debug("Notice, autoassign option is disabled")
+    else:
+        autoassign_rras(config)
 
 if __name__ == "__main__":
     main()
