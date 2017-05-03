@@ -189,8 +189,6 @@ def autoassign_rras(config):
     except IndexError:
         debug("No unassigned RRAs")
 
-    sys.exit(1)
-
 def fill_bug(config, nags, rrajsondoc):
     bcfg = config['bugzilla']
 
@@ -361,12 +359,6 @@ def main():
             debug('Parsed {}: {}'.format(sheets[s.id], rra_version))
         else:
             debug('Document {} ({}) could not be parsed and is probably not an RRA (no version detected)'.format(sheets[s.id], s.id))
-
-    # Use this opportunity to do some house keeping!
-    if len(config['bugzilla']['autoassign']) == 0:
-        debug("Notice, autoassign option is disabled")
-    else:
-        autoassign_rras(config)
 
 if __name__ == "__main__":
     main()
