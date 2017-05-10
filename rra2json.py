@@ -136,14 +136,6 @@ def detect_version(gc, s):
     # Out of luck.
     return None
 
-def check_last_update(gc, s):
-    '''
-    Find last update of first worksheet of a spreadsheet
-    Can be used to filter what sheets to work on (for ex "last week updates only, etc.")
-    '''
-    last_update = s.sheet1.updated
-    return True
-
 def autoassign_rras(config):
     """This will search through unassigned RRA bugs and assign them automatically"""
     bcfg = config['bugzilla']
