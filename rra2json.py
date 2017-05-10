@@ -22,6 +22,7 @@ import bugzilla
 import requests
 import dateutil.parser
 import pickle
+import argparse
 
 # Python2 fun
 try:
@@ -270,16 +271,12 @@ def verify_fields_and_nag(config, rrajsondoc):
         fill_bug(config, nags, rrajsondoc)
         return False
 
-def main():
-    os.environ['TZ']='UTC'
-    with open('rra2json.json') as fd:
-        config = json.load(fd)
-        rra2jsonconfig = config['rra2json']
-        authconfig = config['oauth2']
-        rrajson_skel = config['rrajson']
-        data_levels = config['data_levels']
-        risk_levels = config['risk_levels']
-
+def main(config):
+    rra2jsonconfig = config['rra2json']
+    authconfig = config['oauth2']
+    rrajson_skel = config['rrajson']
+    data_levels = config['data_levels']
+    risk_levels = config['risk_levels']
 
     #Disable debugging messages by assigning a null/none function, if configured to do so.
     if rra2jsonconfig['debug'] != 'true':
@@ -291,17 +288,6 @@ def main():
 
     if not gc:
         fatal('Authorization failed')
-
-    # Print a notice if the nag function is disabled
-    if len(config['bugzilla']['api_key']) == 0:
-        debug('Notice, bugzilla nag function is disabled (no configured API key)')
-
-    # Use this opportunity to do some house keeping!
-    if len(config['bugzilla']['autoassign']) == 0:
-        debug("Notice, autoassign option is disabled")
-    else:
-        autoassign_rras(config)
-
 
     # Looking at the XML feed is the only way to get sheet document title for some reason.
     sheets = get_sheet_titles(gc)
@@ -353,4 +339,25 @@ def main():
             debug('Document {} ({}) could not be parsed and is probably not an RRA (no version detected)'.format(sheets[s.id], s.id))
 
 if __name__ == "__main__":
-    main()
+    #Load defaults, config
+    os.environ['TZ']='UTC'
+    with open('rra2json.json') as fd:
+        config = json.load(fd)
+
+    #Warn about any global config issue
+    if len(config['bugzilla']['api_key']) == 0:
+         debug('Notice, bugzilla functionality is disabled (no configured API key)')
+
+    #Parse arguments
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-a", "--assign-rras", help="autoassign pending rras only (no rra conversion, etc. done)", action="store_true")
+    args = parser.parse_args()
+
+    if args.assign_rras:
+        # Use this opportunity to do some house keeping!
+        if len(config['bugzilla']['autoassign']) == 0:
+            debug("Notice, autoassign option is disabled")
+        else:
+            autoassign_rras(config)
+    else:
+        main(config)
