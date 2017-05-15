@@ -164,6 +164,10 @@ def autoassign_rras(config):
         bugzilla.DotDict(bugs[-1])
         debug("Found {} unassigned RRA(s). Assigning work!".format(len(bugs)))
         for bug in bugs:
+            # Is this a valid rra request bug?
+            if bug['whiteboard'].startswith('autoentry'):
+                debug("{} is not an RRA, skipping".format(bug['id']))
+                continue
             # Next assignee in the list, rotate
             assignee = assign_list.pop()
             assign_list.insert(0, assignee)
