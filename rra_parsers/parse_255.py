@@ -23,7 +23,11 @@ def parse_rra(gc, sheet, name, version, rrajson, data_levels, risk_levels):
     if (len(metadata.service) == 0):
         return None
 
-    metadata.scope = cell_value_near(sheet_data, 'Scoped for team')
+    try:
+        metadata.scope = cell_value_near(sheet_data, 'Scoped for team')
+    except IndexError:
+        metadata.scope = cell_value_near(sheet_data, 'Audience')
+
     metadata.owner = cell_value_near(sheet_data, 'Service Owner', xmoves=2, ymoves=0)
     metadata.description = cell_value_near(sheet_data, 'Description')
     try:
