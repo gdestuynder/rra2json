@@ -34,7 +34,8 @@
 		"port": 443,
 		"proto": "https",
 		"tls_verify": "true",
-		"endpoint": "/api/v1/rra/update"
+		"endpoint": "/api/v1/rra/update",
+		"apikey": ""
 	},
 	/* Data levels
 	 */
