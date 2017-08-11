@@ -52,7 +52,7 @@ def debug(msg):
 def post_rra_to_servicemap(cfg, rrajsondoc):
     url = '{proto}://{host}:{port}{endpoint}'.format(proto=cfg['proto'], host=cfg['host'],
                                                         port=cfg['port'], endpoint=cfg['endpoint'])
-    payload = {'rra': rjson.dumps(rrajsondoc)}
+    payload = rjson.dumps(rrajsondoc)
 
     if len(cfg['x509cert']) > 1:
         verify=cfg['x509cert']
@@ -64,7 +64,8 @@ def post_rra_to_servicemap(cfg, rrajsondoc):
     #Hack to get a version number, until this is fetched from the gdrive API
     rrajsondoc['version'] = dateutil.parser.parse(rrajsondoc['lastmodified']).strftime('%s')
 
-    r = requests.post(url, data=payload, verify=verify)
+    headers = {'SERVICEAPIKEY': cfg['apikey']}
+    r = requests.post(url, data=payload, headers=headers, verify=verify)
     if r.status_code != requests.codes.ok:
         fatal("Failed to send RRA to servicemap (nag missing?): error code: {} message: {} rra: {}".format(r.status_code, r.content, rrajsondoc['source']))
 
